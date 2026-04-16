@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,gu
+  apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
 const SYSTEM = `You are DelphAI, a rigorous philosophical interlocutor. Your purpose is not to make the person comfortable but to make them think more precisely — to expose the architecture of their assumptions, stress-test their reasoning against serious philosophical frameworks, and leave them with a harder, cleaner question than the one they started with.
