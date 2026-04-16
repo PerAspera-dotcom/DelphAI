@@ -1,6 +1,4 @@
 
-Copy
-
 import Anthropic from '@anthropic-ai/sdk' // DelphAI
 import { NextRequest, NextResponse } from 'next/server'
  
