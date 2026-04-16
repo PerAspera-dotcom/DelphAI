@@ -85,12 +85,10 @@ export async function POST(req: NextRequest) {
       messages: messagesWithPrefill,
     })
 
-    const text =
-      '**Position**\n' +
-      response.content
-        .filter((b) => b.type === 'text')
-        .map((b) => (b.type === 'text' ? b.text : ''))
-        .join('')
+    const text = response.content
+    .filter((b) => b.type === 'text')
+    .map((b) => (b.type === 'text' ? b.text : ''))
+    .join('')
 
     return NextResponse.json({ text })
   } catch (error) {
