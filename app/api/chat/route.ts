@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       ...messagesWithReminder,
       {
         role: 'assistant',
-        content: '**Position**\n',
+        content: '**Position**',
       },
     ]
 
