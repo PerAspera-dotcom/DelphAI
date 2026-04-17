@@ -217,10 +217,11 @@ export default function Home() {
         <blockquote className={styles.ageQuote}>
           "Few things are as dangerous as too grand an idea in too small a mind."
         </blockquote>
-        <p className={styles.ageQuestion}>Are you 18 years of age or older?</p>
+        <p className={styles.ageCommitment}>DelphAI is designed as a thinking companion, it can help you in gaining a deeper understanding of yourself and the world around you but it can make mistakes while doing so. Be mindful of its limitations.</p>
+<p className={styles.ageQuestion}>Do you agree to engage with this tool in a critical way?</p>
         <div className={styles.ageBtns}>
-          <button className={styles.ageYes} onClick={() => setAgeVerified(true)}>Yes</button>
-          <button className={styles.ageNo} onClick={() => setAgeVerified(false)}>No</button>
+          <button className={styles.ageYes} onClick={() => setAgeVerified(true)}>I agree</button>
+          <button className={styles.ageNo} onClick={() => setAgeVerified(false)}>I don't agree</button>
         </div>
       </div>
     )
@@ -233,7 +234,7 @@ export default function Home() {
         <blockquote className={styles.ageQuote}>
           "Few things are as dangerous as too grand an idea in too small a mind."
         </blockquote>
-        <p className={styles.ageUnder}>DelphAI is intended for adults. Come back when you&apos;re ready.</p>
+        <p className={styles.ageUnder}>DelphAI is built for those who engage seriously. Come back when you&apos;re ready.</p>
       </div>
     )
   }
