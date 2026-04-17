@@ -40,7 +40,7 @@ const WELCOME_POOL = [
   'Where the abyss also talks back.',
   'Where does your mind take us today?',
   'Putting the AI back in Aesop.',
-  'Where you can ask Alexander to get out of our sun.',
+  'Can you ask Alexander to get out of our sun?',
   'The first step out of the basement or the first step back into it.',
 ]
 
@@ -151,6 +151,7 @@ export default function Home() {
   const [suggestions] = useState(() => getRandomSuggestions(4))
   const [welcomeText] = useState(() => getRandomWelcome())
   const [suggestionsVisible, setSuggestionsVisible] = useState(true)
+  const [language, setLanguage] = useState('English')
   const chatRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -194,7 +195,7 @@ export default function Home() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: newMessages, language }),
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
@@ -244,6 +245,16 @@ export default function Home() {
       <header className={styles.header}>
         <DelphAILogo size={32} />
         <div className={styles.logoText}>Delph<span>AI</span></div>
+        <select
+          className={styles.langSelect}
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+        >
+          <option value="English">EN</option>
+          <option value="Dutch">NL</option>
+          <option value="French">FR</option>
+          <option value="German">DE</option>
+        </select>
       </header>
 
       <div className={styles.chat} ref={chatRef}>

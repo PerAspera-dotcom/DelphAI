@@ -150,12 +150,12 @@ type Message = {
  
 export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json() as { messages: Message[] }
+    const { messages, language } = await req.json() as { messages: Message[], language: string }
  
     const response = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
-      system: SYSTEM,
+      system: SYSTEM + `\n\nRespond entirely in ${language}. All philosophical terms, citations, and section headers must also be in ${language}.`,
       messages,
     })
  
