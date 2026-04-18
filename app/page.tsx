@@ -8,49 +8,109 @@ type Message = {
   content: string
 }
 
-const FIXED_SUGGESTION = 'What is wrong with this world?'
-
-const SUGGESTION_POOL = [
-  'What is time?',
-  'What is meaning?',
-  'What is value?',
-  'Why does something feel right or wrong?',
-  'What is justice?',
-  'What is the self?',
-  'Is free will real?',
-  'What is consciousness?',
-  'Why do we fear death?',
-  'What do we owe each other?',
-  'Can we ever truly know anything?',
-  'What makes a life well-lived?',
-  'Why is there something rather than nothing?',
-  'What is beauty?',
-  'Is happiness the point of life?',
-  'What is truth?',
-  'Why do good people do bad things?',
-  'What is power?',
-  'Can violence ever be justified?',
-  'What is love?',
-  'Why do humans need meaning?',
-  'Is morality invented or discovered?',
-]
-
-const WELCOME_POOL = [
-  'A friendly voice in the forest of the mind.',
-  'Where the abyss also talks back.',
-  'Where does your mind take us today?',
-  'Putting the AI back in Aesop.',
-  'Can you ask Alexander to get out of our sun?',
-  'The first step out of the basement or the first step back into it.',
-]
-
-function getRandomSuggestions(count: number): string[] {
-  const shuffled = [...SUGGESTION_POOL].sort(() => Math.random() - 0.5)
-  return [FIXED_SUGGESTION, ...shuffled.slice(0, count)]
+const FIXED_SUGGESTION: Record<string, string> = {
+  English: 'What is wrong with this world?',
+  Dutch: 'Wat is er mis met deze wereld?',
+  French: 'Qu\'est-ce qui ne va pas dans ce monde?',
+  German: 'Was stimmt nicht mit dieser Welt?',
 }
 
-function getRandomWelcome(): string {
-  return WELCOME_POOL[Math.floor(Math.random() * WELCOME_POOL.length)]
+const SUGGESTION_POOL: Record<string, string[]> = {
+  English: [
+    'What is time?', 'What is meaning?', 'What is value?',
+    'Why does something feel right or wrong?', 'What is justice?',
+    'What is the self?', 'Is free will real?', 'What is consciousness?',
+    'Why do we fear death?', 'What do we owe each other?',
+    'Can we ever truly know anything?', 'What makes a life well-lived?',
+    'Why is there something rather than nothing?', 'What is beauty?',
+    'Is happiness the point of life?', 'What is truth?',
+    'Why do good people do bad things?', 'What is power?',
+    'Can violence ever be justified?', 'What is love?',
+    'Why do humans need meaning?', 'Is morality invented or discovered?',
+  ],
+  Dutch: [
+    'Wat is tijd?', 'Wat is betekenis?', 'Wat is waarde?',
+    'Waarom voelt iets goed of fout?', 'Wat is rechtvaardigheid?',
+    'Wat is het zelf?', 'Is vrije wil echt?', 'Wat is bewustzijn?',
+    'Waarom zijn we bang voor de dood?', 'Wat zijn we elkaar verschuldigd?',
+    'Kunnen we ooit iets echt weten?', 'Wat maakt een leven de moeite waard?',
+    'Waarom bestaat er iets in plaats van niets?', 'Wat is schoonheid?',
+    'Is geluk het doel van het leven?', 'Wat is waarheid?',
+    'Waarom doen goede mensen slechte dingen?', 'Wat is macht?',
+    'Kan geweld ooit gerechtvaardigd zijn?', 'Wat is liefde?',
+    'Waarom hebben mensen betekenis nodig?', 'Is moraliteit uitgevonden of ontdekt?',
+  ],
+  French: [
+    'Qu\'est-ce que le temps?', 'Qu\'est-ce que le sens?', 'Qu\'est-ce que la valeur?',
+    'Pourquoi quelque chose semble-t-il juste ou faux?', 'Qu\'est-ce que la justice?',
+    'Qu\'est-ce que le soi?', 'Le libre arbitre est-il réel?', 'Qu\'est-ce que la conscience?',
+    'Pourquoi craignons-nous la mort?', 'Que nous devons-nous mutuellement?',
+    'Peut-on jamais vraiment savoir quelque chose?', 'Qu\'est-ce qui rend une vie bien vécue?',
+    'Pourquoi y a-t-il quelque chose plutôt que rien?', 'Qu\'est-ce que la beauté?',
+    'Le bonheur est-il le but de la vie?', 'Qu\'est-ce que la vérité?',
+    'Pourquoi les bonnes personnes font-elles de mauvaises choses?', 'Qu\'est-ce que le pouvoir?',
+    'La violence peut-elle jamais être justifiée?', 'Qu\'est-ce que l\'amour?',
+    'Pourquoi les humains ont-ils besoin de sens?', 'La moralité est-elle inventée ou découverte?',
+  ],
+  German: [
+    'Was ist Zeit?', 'Was ist Bedeutung?', 'Was ist Wert?',
+    'Warum fühlt sich etwas richtig oder falsch an?', 'Was ist Gerechtigkeit?',
+    'Was ist das Selbst?', 'Ist freier Wille real?', 'Was ist Bewusstsein?',
+    'Warum fürchten wir den Tod?', 'Was schulden wir einander?',
+    'Können wir jemals wirklich etwas wissen?', 'Was macht ein Leben lebenswert?',
+    'Warum gibt es etwas statt nichts?', 'Was ist Schönheit?',
+    'Ist Glück der Sinn des Lebens?', 'Was ist Wahrheit?',
+    'Warum tun gute Menschen schlechte Dinge?', 'Was ist Macht?',
+    'Kann Gewalt jemals gerechtfertigt sein?', 'Was ist Liebe?',
+    'Warum brauchen Menschen Bedeutung?', 'Ist Moral erfunden oder entdeckt?',
+  ],
+}
+
+const WELCOME_POOL: Record<string, string[]> = {
+  English: [
+    'A friendly voice in the forest of the mind.',
+    'Where the abyss also talks back.',
+    'Where does your mind take us today?',
+    'Putting the AI back in Aesop.',
+    'Can you ask Alexander to get out of our sun?',
+    'The first step out of the basement or the first step back into it.',
+  ],
+  Dutch: [
+    'Een vriendelijke stem in het woud van de geest.',
+    'Waar de afgrond ook terugpraat.',
+    'Waar neemt jouw geest ons vandaag naartoe?',
+    'De eerste stap uit de kelder of de eerste stap terug erin.',
+    'Denken is het begin van alles.',
+    'Waar vragen groter worden dan antwoorden.',
+  ],
+  French: [
+    'Une voix amicale dans la forêt de l\'esprit.',
+    'Où l\'abîme répond aussi.',
+    'Où votre esprit nous emmène-t-il aujourd\'hui?',
+    'Le premier pas hors du sous-sol ou le premier pas pour y retourner.',
+    'Penser, c\'est le début de tout.',
+    'Là où les questions deviennent plus grandes que les réponses.',
+  ],
+  German: [
+    'Eine freundliche Stimme im Wald des Geistes.',
+    'Wo der Abgrund auch zurückspricht.',
+    'Wohin nimmt uns dein Geist heute?',
+    'Der erste Schritt aus dem Keller oder der erste Schritt zurück.',
+    'Denken ist der Anfang von allem.',
+    'Wo Fragen größer werden als Antworten.',
+  ],
+}
+
+function getRandomSuggestions(count: number, lang: string): string[] {
+  const pool = SUGGESTION_POOL[lang] ?? SUGGESTION_POOL['English']
+  const fixed = FIXED_SUGGESTION[lang] ?? FIXED_SUGGESTION['English']
+  const shuffled = [...pool].sort(() => Math.random() - 0.5)
+  return [fixed, ...shuffled.slice(0, count)]
+}
+
+function getRandomWelcome(lang: string): string {
+  const pool = WELCOME_POOL[lang] ?? WELCOME_POOL['English']
+  return pool[Math.floor(Math.random() * pool.length)]
 }
 
 // Parse structured response into sections
@@ -148,10 +208,15 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [suggestions] = useState(() => getRandomSuggestions(4))
-  const [welcomeText] = useState(() => getRandomWelcome())
+  const [suggestions, setSuggestions] = useState(() => getRandomSuggestions(4, 'English'))
+  const [welcomeText, setWelcomeText] = useState(() => getRandomWelcome('English'))
   const [suggestionsVisible, setSuggestionsVisible] = useState(true)
   const [language, setLanguage] = useState('English')
+  useEffect(() => {
+    setSuggestions(getRandomSuggestions(4, language))
+    setWelcomeText(getRandomWelcome(language))
+  }, [language])
+
   const chatRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -265,7 +330,12 @@ export default function Home() {
           </div>
           {suggestionsVisible && (
             <div className={styles.suggestionsBlock}>
-              <div className={styles.suggestionsLabel}>Suggestions to get you started</div>
+              <div className={styles.suggestionsLabel}>
+                {language === 'Dutch' ? 'Suggesties om mee te beginnen' :
+                 language === 'French' ? 'Suggestions pour commencer' :
+                 language === 'German' ? 'Vorschläge zum Einstieg' :
+                 'Suggestions to get you started'}
+              </div>
               <div className={styles.suggestions}>
                 {suggestions.map((s) => (
                   <button key={s} className={styles.sugBtn} onClick={() => fill(s)}>
@@ -313,7 +383,12 @@ export default function Home() {
           <textarea
             ref={textareaRef}
             className={styles.input}
-            placeholder="Ask anything..."
+            placeholder={
+              language === 'Dutch' ? 'Stel een vraag...' :
+              language === 'French' ? 'Posez une question...' :
+              language === 'German' ? 'Stell eine Frage...' :
+              'Ask anything...'
+            }
             value={input}
             onChange={handleInput}
             onKeyDown={handleKey}
