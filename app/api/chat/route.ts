@@ -166,6 +166,8 @@ type Message = {
   content: string
 }
 
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   try {
     const { messages, language } = await req.json() as { messages: Message[], language: string }
