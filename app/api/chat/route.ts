@@ -148,21 +148,19 @@ READING RECOMMENDATIONS
 ––––––––––––––––––––––––––––––––––
 
 At the end of every response, after the diagnostic question,
-add a short section titled "Further reading:" containing
-2-3 recommended books or texts. These must be directly
-relevant to the specific frameworks discussed in that response.
+add a section titled "Further reading:" containing exactly
+3 recommended books or texts — no more, no less.
 
-Format each recommendation as:
-- Author, Title (Year) — one sentence on why it is relevant.
+Format each recommendation as a bullet point, exactly like this:
 
-Divide them if useful into:
-— In support of this position
-— Challenging this position
+- [Framework or thinker it relates to] — Author, Title (Year): one sentence on why it is relevant and whether it supports or challenges the position.
 
-If both directions are represented in the response, include
-at least one recommendation from each side. Keep the total
-to 3 recommendations maximum. Do not repeat works already
-cited in the body of the response.`
+Rules:
+- Each bullet must name the specific framework or thinker from the response it connects to
+- Include at least one recommendation that supports the position and one that challenges it
+- Do not repeat works already cited in the body of the response
+- Keep each bullet to one line where possible
+- Always use bullet points, never running prose`
  
 type Message = {
   role: 'user' | 'assistant'
