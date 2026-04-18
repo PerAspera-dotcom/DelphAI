@@ -325,7 +325,12 @@ export default function Home() {
       <div className={styles.chat} ref={chatRef}>
         <div className={styles.welcomeBlock}>
           <div className={styles.welcomeText}>
-            <span className={styles.welcomeLine}>Welcome to DelphAI,</span>
+            <span className={styles.welcomeLine}>
+              {language === 'Dutch' ? 'Welkom bij DelphAI,' :
+               language === 'French' ? 'Bienvenue sur DelphAI,' :
+               language === 'German' ? 'Willkommen bei DelphAI,' :
+               'Welcome to DelphAI,'}
+            </span>
             <span className={styles.welcomeQ}>{welcomeText}</span>
           </div>
           {suggestionsVisible && (
