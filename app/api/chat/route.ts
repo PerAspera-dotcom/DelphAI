@@ -1,6 +1,9 @@
-import { NextRequest } from 'next/server'
+import Anthropic from '@anthropic-ai/sdk' // DelphAI
+import { NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'edge'
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+})
 
 const SYSTEM = `You are a philosophical interlocutor, not a general assistant.
 
@@ -167,72 +170,24 @@ export async function POST(req: NextRequest) {
   try {
     const { messages, language } = await req.json() as { messages: Message[], language: string }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) throw new Error('Missing API key')
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4096,
-        stream: true,
-        system: SYSTEM + `\n\nRespond entirely in ${language}. All philosophical terms, citations, and section headers must also be in ${language}.`,
-        messages,
-      }),
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4096,
+      system: SYSTEM + `\n\nRespond entirely in ${language}. All philosophical terms, citations, and section headers must also be in ${language}.`,
+      messages,
     })
 
-    if (!response.ok || !response.body) {
-      throw new Error(`Anthropic error: ${response.status}`)
-    }
+    const text = response.content
+      .filter((b) => b.type === 'text')
+      .map((b) => (b.type === 'text' ? b.text : ''))
+      .join('')
 
-    const encoder = new TextEncoder()
-    const decoder = new TextDecoder()
-
-    const stream = new TransformStream({
-      async transform(chunk, controller) {
-        const text = decoder.decode(chunk, { stream: true })
-        const lines = text.split('\n')
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6).trim()
-            if (data === '[DONE]') {
-              controller.enqueue(encoder.encode('data: [DONE]\n\n'))
-              return
-            }
-            try {
-              const parsed = JSON.parse(data)
-              if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
-                const out = JSON.stringify({ text: parsed.delta.text })
-                controller.enqueue(encoder.encode(`data: ${out}\n\n`))
-              }
-              if (parsed.type === 'message_stop') {
-                controller.enqueue(encoder.encode('data: [DONE]\n\n'))
-              }
-            } catch {}
-          }
-        }
-      }
-    })
-
-    response.body.pipeThrough(stream)
-
-    return new Response(stream.readable, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache, no-transform',
-        'X-Accel-Buffering': 'no',
-      },
-    })
+    return NextResponse.json({ text })
   } catch (error) {
     console.error('DelphAI API error:', error)
-    return new Response(
-      JSON.stringify({ error: 'Something went wrong. Please try again.' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    return NextResponse.json(
+      { error: 'Something went wrong. Please try again.' },
+      { status: 500 }
     )
   }
 }

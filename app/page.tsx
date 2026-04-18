@@ -195,40 +195,9 @@ export default function Home() {
         body: JSON.stringify({ messages: newMessages, language }),
       })
 
-      if (!res.ok || !res.body) throw new Error('Stream failed')
-
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let accumulated = ''
-
-      setMessages([...newMessages, { role: 'assistant', content: '' }])
-      setLoading(false)
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n')
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6).trim()
-            if (data === '[DONE]') continue
-            try {
-              const parsed = JSON.parse(data)
-              if (parsed.text) {
-                accumulated += parsed.text
-                setMessages(prev => {
-                  const updated = [...prev]
-                  updated[updated.length - 1] = { role: 'assistant', content: accumulated }
-                  return updated
-                })
-              }
-            } catch {}
-          }
-        }
-      }
+      const data = await res.json()
+      if (data.error) throw new Error(data.error)
+      setMessages([...newMessages, { role: 'assistant', content: data.text }])
     } catch {
       setMessages([
         ...newMessages,
