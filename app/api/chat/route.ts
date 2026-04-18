@@ -159,7 +159,11 @@ Rules:
 - Include at least one recommendation that supports the position and one that challenges it
 - Do not repeat works already cited in the body of the response
 - Keep each bullet to one line where possible
-- Always use bullet points, never running prose`
+- Always use bullet points, never running prose
+- Format: * Title — Author — relevant framework/topic
+
+After 6 or more exchanges where a clear position has emerged, add a single line at the very end of your response:
+[You can download a synopsis of this conversation using the Download Synopsis button above.]`
 
 type Message = {
   role: 'user' | 'assistant'

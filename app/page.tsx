@@ -144,6 +144,32 @@ export default function Home() {
   const [suggestions, setSuggestions] = useState(() => getRandomSuggestions(4, 'English'))
   const [welcomeText, setWelcomeText] = useState(() => getRandomWelcome('English'))
   const [suggestionsVisible, setSuggestionsVisible] = useState(true)
+  const [downloading, setDownloading] = useState(false)
+
+  async function downloadSynopsis() {
+    if (messages.length < 2) return
+    setDownloading(true)
+    try {
+      const res = await fetch('/api/synopsis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, language }),
+      })
+      if (!res.ok) throw new Error('Failed')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'DelphAI_Synopsis.docx'
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      alert('Could not generate synopsis. Please try again.')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   const chatRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -259,6 +285,16 @@ export default function Home() {
           <option value="French">FR</option>
           <option value="German">DE</option>
         </select>
+        {messages.length >= 2 && (
+          <button
+            className={styles.synopsisBtn}
+            onClick={downloadSynopsis}
+            disabled={downloading}
+            title="Download conversation synopsis as Word document"
+          >
+            {downloading ? '...' : 'Download synopsis'}
+          </button>
+        )}
       </header>
 
       <div className={styles.chat} ref={chatRef}>
