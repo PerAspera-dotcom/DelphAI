@@ -394,3 +394,35 @@
   opacity: 0.5;
   cursor: default;
 }
+
+.aiPara {
+  margin: 0 0 10px;
+  line-height: 1.75;
+  font-size: 15px;
+}
+
+.bulletItem {
+  padding-left: 16px;
+  margin-bottom: 8px;
+  line-height: 1.65;
+  font-size: 15px;
+  position: relative;
+}
+
+.bulletItem::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #4a6741;
+}
+
+.sectionHeading {
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #4a6741;
+  margin: 18px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 0.5px solid var(--border);
+}

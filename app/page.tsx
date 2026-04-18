@@ -113,26 +113,59 @@ function getRandomWelcome(lang: string): string {
   return pool[Math.floor(Math.random() * pool.length)]
 }
 
-function formatText(text: string): React.ReactNode[] {
+function formatInline(text: string): React.ReactNode[] {
   return text.split(/(\*[^*\n]+\*)/g).map((part, i) => {
     if (part.startsWith('*') && part.endsWith('*')) {
       return <em key={i} className={styles.concept}>{part.slice(1, -1)}</em>
     }
-    return part.split('\n\n').map((line, j) => (
-      <span key={`${i}-${j}`}>
-        {j > 0 && <><br /><br /></>}
-        {line}
-      </span>
-    ))
+    return <span key={i}>{part}</span>
   })
 }
 
 function AIMessage({ content }: { content: string }) {
-  return (
-    <div className={styles.aiText}>
-      {formatText(content)}
-    </div>
-  )
+  const lines = content.split('\n')
+  const elements: React.ReactNode[] = []
+  let key = 0
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+    if (!line) continue
+
+    // Section headings — lines that are short and followed by content
+    if (
+      /^(Further reading|Counter-Pressure|Tension Analysis|Diagnostic Question|Restated Position|Philosophical Lineage|Verdere lectuur|Lecture complémentaire|Weiterlesen)[:.]?$/i.test(line) ||
+      /^(Further reading|Lecture complémentaire|Verdere lectuur|Weiterlesen):/i.test(line)
+    ) {
+      elements.push(
+        <div key={key++} className={styles.sectionHeading}>{line.replace(/:$/, '')}</div>
+      )
+      continue
+    }
+
+    // Bullet points
+    if (line.startsWith('•') || line.startsWith('*') && line.length > 2 && !line.endsWith('*')) {
+      const text = line.replace(/^[•*]\s*/, '')
+      elements.push(
+        <div key={key++} className={styles.bulletItem}>{formatInline(text)}</div>
+      )
+      continue
+    }
+
+    // Numbered items
+    if (/^\d+\./.test(line)) {
+      elements.push(
+        <div key={key++} className={styles.bulletItem}>{formatInline(line)}</div>
+      )
+      continue
+    }
+
+    // Regular paragraph
+    elements.push(
+      <p key={key++} className={styles.aiPara}>{formatInline(line)}</p>
+    )
+  }
+
+  return <div className={styles.aiText}>{elements}</div>
 }
 
 export default function Home() {
