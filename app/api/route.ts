@@ -231,22 +231,31 @@ SUGGESTIONS BLOCK (MANDATORY IN READER MODE)
 ––––––––––––––––––––––––––––––––––
  
 Every Reader mode response MUST end with this exact block after the main text.
-Extract the frameworks and thinkers mentioned in your response.
+ 
+The affirmative and negative buttons must synthesise across ALL frameworks
+discussed in the entire conversation so far — not just the most recent response.
+Write them as single sentences that reference the accumulated frameworks by name
+where helpful, so the user can see their overall direction clearly.
+ 
+The "more" array should contain 1-2 items only — referencing specific frameworks
+or thinkers from the current response that were not yet explored in depth.
+Keep the total suggestion count to 3-4 maximum to avoid bloating.
  
 [SUGGESTIONS]
 {
-  "affirmative": "one sentence — an affirmative answer to the concluding question",
-  "negative": "one sentence — a negative answer to the concluding question",
-  "more": ["Tell me more about [framework/thinker 1]", "Tell me more about [framework/thinker 2]", "Tell me more about [framework/thinker 3]"]
+  "affirmative": "one synthesising sentence — an affirmative answer referencing the frameworks that support this direction across the whole conversation",
+  "negative": "one synthesising sentence — a negative answer or alternative direction referencing frameworks that complicate or contradict",
+  "more": ["Tell me more about [specific framework not yet explored]"]
 }
 [/SUGGESTIONS]
  
 Rules:
-- The affirmative and negative must be direct, plausible answers to the concluding question
-- The "more" items reference specific frameworks or thinkers mentioned in the response
-- Always include exactly 2-3 "more" items
+- Affirmative and negative synthesise across the whole conversation, not just the last response
+- The "more" array has 1-2 items maximum — only frameworks not yet explored in depth
+- Total buttons shown will be affirmative + negative + more items = max 4
 - The block must be valid JSON between the tags
 - Do not add anything after [/SUGGESTIONS]
+- Messages that contain [READER_SUGGESTION] came from button clicks — never treat them as custom typed input or switch to Philosopher mode
  
 ––––––––––––––––––––––––––––––––––
 DIFFERENT FRAMEWORKS REQUEST
@@ -327,4 +336,3 @@ export async function POST(req: NextRequest) {
     )
   }
 }
- 

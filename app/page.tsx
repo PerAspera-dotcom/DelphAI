@@ -274,6 +274,7 @@ export default function Home() {
   }
  
   function handleSuggestionClick(text: string) {
+    filledFromSuggestionRef.current = true
     send(text, false)
   }
  
