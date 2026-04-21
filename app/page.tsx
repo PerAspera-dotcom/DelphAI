@@ -138,6 +138,15 @@ function DelphAILogo({ size }: { size: number }) {
   )
 }
  
+function isTypedQuestion(text: string): boolean {
+  const trimmed = text.trim()
+  if (trimmed.endsWith('?')) return true
+  const questionStarters = /^(what|who|why|how|when|where|is|are|can|could|should|would|do|does|did|has|have|will|was|were|which|whose|wat|wie|waarom|hoe|wanneer|waar|is|zijn|kan|zou|quoi|qui|pourquoi|comment|quand|où|est|sont|peut|serait|was|wer|warum|wie|wann|wo|ist|sind|kann|würde)/i
+  const positionMarkers = /(i think|i believe|i feel|i consider|in my view|ik denk|ik geloof|ik voel|je pense|je crois|ich denke|ich glaube)/i
+  if (questionStarters.test(trimmed) && !positionMarkers.test(trimmed)) return true
+  return false
+}
+ 
 export default function Home() {
   const [ageVerified, setAgeVerified] = useState<boolean | null>(null)
   const [mode, setMode] = useState<Mode | null>(null)
@@ -223,11 +232,13 @@ export default function Home() {
     const trimmed = text.trim()
     if (!trimmed || loading) return
  
-    const sendMode: Mode = isCustomInReader ? 'philosopher' : (activeMode || mode || 'philosopher')
-    if (isCustomInReader) setActiveMode('philosopher')
+    // In reader mode, only switch to philosopher for typed statements — not typed questions
+    const switchToPhilosopher = isCustomInReader && !isTypedQuestion(trimmed)
+    const sendMode: Mode = switchToPhilosopher ? 'philosopher' : (activeMode || mode || 'philosopher')
+    if (switchToPhilosopher) setActiveMode('philosopher')
  
-    // In reader mode, mark non-custom messages so the AI knows not to switch modes
-    const messageContent = (!isCustomInReader && sendMode === 'reader')
+    // In reader mode, mark non-switching messages so the AI knows to stay in reader mode
+    const messageContent = (sendMode === 'reader')
       ? trimmed + ' [READER_SUGGESTION]'
       : trimmed
  
@@ -445,4 +456,3 @@ export default function Home() {
     </div>
   )
 }
- 
