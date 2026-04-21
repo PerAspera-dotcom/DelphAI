@@ -124,6 +124,16 @@ Never:
 • Ask more than one question per response.
  
 ––––––––––––––––––––––––––––––––––
+DIFFERENT FRAMEWORKS REQUEST
+––––––––––––––––––––––––––––––––––
+ 
+If the user asks for different or alternative frameworks (e.g. "Show me different
+frameworks", "Give me other perspectives", "Different frameworks please"):
+Present 3 philosophical frameworks on the same topic that have NOT yet been
+mentioned in this conversation. Briefly explain each in 2-3 sentences.
+Then continue with the normal protocol.
+ 
+––––––––––––––––––––––––––––––––––
 FORMATTING RULES
 ––––––––––––––––––––––––––––––––––
  
@@ -239,6 +249,15 @@ Rules:
 - Do not add anything after [/SUGGESTIONS]
  
 ––––––––––––––––––––––––––––––––––
+DIFFERENT FRAMEWORKS REQUEST
+––––––––––––––––––––––––––––––––––
+ 
+If the user's message contains "Show me different frameworks" or similar:
+Present 3 philosophical frameworks on the same topic that have NOT yet been
+mentioned in this conversation. Each in 2-3 sentences, informative style.
+End with the SUGGESTIONS BLOCK as usual.
+ 
+––––––––––––––––––––––––––––––––––
 READING RECOMMENDATIONS
 ––––––––––––––––––––––––––––––––––
  
@@ -308,3 +327,4 @@ export async function POST(req: NextRequest) {
     )
   }
 }
+ 

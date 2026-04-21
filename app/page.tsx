@@ -232,8 +232,9 @@ export default function Home() {
     const trimmed = text.trim()
     if (!trimmed || loading) return
  
-    // In reader mode, only switch to philosopher for typed statements — not typed questions
-    const switchToPhilosopher = isCustomInReader && !isTypedQuestion(trimmed)
+    // In reader mode, only switch to philosopher for typed statements with clear position markers
+    const hasPositionMarker = /(i think|i believe|i feel|i consider|in my view|ik denk|ik geloof|ik voel|je pense|je crois|ich denke|ich glaube|i would say|i argue)/i.test(trimmed)
+    const switchToPhilosopher = isCustomInReader && hasPositionMarker && !isTypedQuestion(trimmed)
     const sendMode: Mode = switchToPhilosopher ? 'philosopher' : (activeMode || mode || 'philosopher')
     if (switchToPhilosopher) setActiveMode('philosopher')
  
@@ -408,6 +409,19 @@ export default function Home() {
               <div className={`${styles.bubble} ${styles.aiBubble} ${activeMode === 'reader' ? styles.readerBubble : ''}`}>
                 <AIMessage content={msg.content} />
               </div>
+              {activeMode === 'philosopher' && i === messages.length - 1 && messages.length >= 2 && (
+                <div className={styles.altFrameworksBtn}>
+                  <button className={`${styles.readerSugBtn} ${styles.readerSugFrameworks}`} onClick={() => {
+                    const text = language === 'Dutch' ? 'Laat me andere filosofische kaders zien' :
+                      language === 'French' ? "Montrez-moi d'autres cadres philosophiques" :
+                      language === 'German' ? 'Zeig mir andere philosophische Rahmen' :
+                      'Show me different frameworks'
+                    send(text, false)
+                  }}>
+                    {language === 'Dutch' ? 'Andere kaders' : language === 'French' ? 'Autres cadres' : language === 'German' ? 'Andere Rahmen' : 'Show me different frameworks'}
+                  </button>
+                </div>
+              )}
               {sugs && activeMode === 'reader' && i === messages.length - 1 && (
                 <div className={styles.readerSuggestions}>
                   <div className={styles.readerSugLabel}>
@@ -418,6 +432,14 @@ export default function Home() {
                   {sugs.more.map((m, j) => (
                     <button key={j} className={`${styles.readerSugBtn} ${styles.readerSugMore}`} onClick={() => handleSuggestionClick(m)}>{m}</button>
                   ))}
+                  <button className={`${styles.readerSugBtn} ${styles.readerSugFrameworks}`} onClick={() => handleSuggestionClick(
+                    language === 'Dutch' ? 'Laat me andere filosofische kaders zien' :
+                    language === 'French' ? "Montrez-moi d'autres cadres philosophiques" :
+                    language === 'German' ? 'Zeig mir andere philosophische Rahmen' :
+                    'Show me different frameworks'
+                  )}>
+                    {language === 'Dutch' ? 'Andere kaders' : language === 'French' ? 'Autres cadres' : language === 'German' ? 'Andere Rahmen' : 'Show me different frameworks'}
+                  </button>
                   <div className={styles.readerSugCustomNote}>
                     {language === 'Dutch' ? 'Of typ je eigen antwoord om naar Filosofenmodus te schakelen' : language === 'French' ? 'Ou tapez votre propre réponse pour passer en mode Philosophe' : language === 'German' ? 'Oder geben Sie Ihre eigene Antwort ein, um in den Philosophenmodus zu wechseln' : 'Or type your own response to switch to Philosopher mode'}
                   </div>
