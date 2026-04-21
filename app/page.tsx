@@ -1,20 +1,20 @@
 'use client'
-
+ 
 import { useState, useRef, useEffect } from 'react'
 import styles from './page.module.css'
-
+ 
 type Message = {
   role: 'user' | 'assistant'
   content: string
 }
-
+ 
 const FIXED_SUGGESTION: Record<string, string> = {
   English: 'What is wrong with this world?',
   Dutch: 'Wat is er mis met deze wereld?',
   French: "Qu'est-ce qui ne va pas dans ce monde?",
   German: 'Was stimmt nicht mit dieser Welt?',
 }
-
+ 
 const SUGGESTION_POOL: Record<string, string[]> = {
   English: [
     'What is time?', 'What is meaning?', 'What is value?',
@@ -65,7 +65,7 @@ const SUGGESTION_POOL: Record<string, string[]> = {
     'Warum brauchen Menschen Bedeutung?', 'Ist Moral erfunden oder entdeckt?',
   ],
 }
-
+ 
 const WELCOME_POOL: Record<string, string[]> = {
   English: [
     'A friendly voice in the forest of the mind.',
@@ -78,8 +78,8 @@ const WELCOME_POOL: Record<string, string[]> = {
   Dutch: [
     'Een vriendelijke stem in het woud van de geest.',
     'Waar de afgrond ook terugpraat.',
-    'Waar neemt jouw geest ons vandaag naartoe?',
-    'De eerste stap uit de kelder of de eerste stap terug erin.',
+    'Waarheen brengen jouw gedachten ons vandaag?',
+    'De eerste stap uit de kelder of de eerste stap terug naar binnen.',
     'Denken is het begin van alles.',
     'Waar vragen groter worden dan antwoorden.',
   ],
@@ -88,31 +88,31 @@ const WELCOME_POOL: Record<string, string[]> = {
     "Où l'abîme répond aussi.",
     "Où votre esprit nous emmène-t-il aujourd'hui?",
     'Le premier pas hors du sous-sol ou le premier pas pour y retourner.',
-    'Penser, c\'est le début de tout.',
+    "Penser, c'est le début de tout.",
     'Là où les questions deviennent plus grandes que les réponses.',
   ],
   German: [
     'Eine freundliche Stimme im Wald des Geistes.',
     'Wo der Abgrund auch zurückspricht.',
     'Wohin nimmt uns dein Geist heute?',
-    'Der erste Schritt aus dem Keller oder der erste Schritt zurück.',
+    'Der erste Schritt aus dem Keller oder der erste Schritt herein.',
     'Denken ist der Anfang von allem.',
     'Wo Fragen größer werden als Antworten.',
   ],
 }
-
+ 
 function getRandomSuggestions(count: number, lang: string): string[] {
   const pool = SUGGESTION_POOL[lang] ?? SUGGESTION_POOL['English']
   const fixed = FIXED_SUGGESTION[lang] ?? FIXED_SUGGESTION['English']
   const shuffled = [...pool].sort(() => Math.random() - 0.5)
   return [fixed, ...shuffled.slice(0, count)]
 }
-
+ 
 function getRandomWelcome(lang: string): string {
   const pool = WELCOME_POOL[lang] ?? WELCOME_POOL['English']
   return pool[Math.floor(Math.random() * pool.length)]
 }
-
+ 
 function formatInline(text: string): React.ReactNode[] {
   return text.split(/(\*[^*\n]+\*)/g).map((part, i) => {
     if (part.startsWith('*') && part.endsWith('*')) {
@@ -121,64 +121,110 @@ function formatInline(text: string): React.ReactNode[] {
     return <span key={i}>{part}</span>
   })
 }
-
+ 
 function AIMessage({ content }: { content: string }) {
   const lines = content.split('\n')
   const elements: React.ReactNode[] = []
   let key = 0
-
+ 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim()
     if (!line) continue
-
-    // Section headings — lines that are short and followed by content
+ 
     if (
-      /^(Further reading|Counter-Pressure|Tension Analysis|Diagnostic Question|Restated Position|Philosophical Lineage|Verdere lectuur|Lecture complémentaire|Weiterlesen)[:.]?$/i.test(line) ||
-      /^(Further reading|Lecture complémentaire|Verdere lectuur|Weiterlesen):/i.test(line)
+      /^(Further reading|Counter-Pressure|Tension Analysis|Diagnostic Question|Restated Position|Philosophical Lineage|Verdere lectuur|Lecture complémentaire|Weiterlesen|Neuformulierung|Philosophische Einordnung|Gegendruck|Spannungsanalyse|Diagnosefrage|Position restituée|Lignée philosophique|Contre-pression|Analyse des tensions|Question diagnostique)[:.]?$/i.test(line)
     ) {
       elements.push(
         <div key={key++} className={styles.sectionHeading}>{line.replace(/:$/, '')}</div>
       )
       continue
     }
-
-    // Bullet points
-    if (line.startsWith('•') || line.startsWith('*') && line.length > 2 && !line.endsWith('*')) {
+ 
+    if (line.startsWith('•') || (line.startsWith('*') && line.length > 2 && !line.endsWith('*'))) {
       const text = line.replace(/^[•*]\s*/, '')
       elements.push(
         <div key={key++} className={styles.bulletItem}>{formatInline(text)}</div>
       )
       continue
     }
-
-    // Numbered items
+ 
     if (/^\d+\./.test(line)) {
       elements.push(
         <div key={key++} className={styles.bulletItem}>{formatInline(line)}</div>
       )
       continue
     }
-
-    // Regular paragraph
+ 
     elements.push(
       <p key={key++} className={styles.aiPara}>{formatInline(line)}</p>
     )
   }
-
+ 
   return <div className={styles.aiText}>{elements}</div>
 }
-
+ 
 export default function Home() {
   const [ageVerified, setAgeVerified] = useState<boolean | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const [language, setLanguage] = useState('English')
   const [suggestions, setSuggestions] = useState(() => getRandomSuggestions(4, 'English'))
   const [welcomeText, setWelcomeText] = useState(() => getRandomWelcome('English'))
   const [suggestionsVisible, setSuggestionsVisible] = useState(true)
-  const [downloading, setDownloading] = useState(false)
-
+  const chatRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const prevLanguageRef = useRef('English')
+ 
+  useEffect(() => {
+    setSuggestions(getRandomSuggestions(4, language))
+    setWelcomeText(getRandomWelcome(language))
+ 
+    const prev = prevLanguageRef.current
+    prevLanguageRef.current = language
+ 
+    if (prev === language || messages.length === 0) return
+ 
+    fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, language }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.messages && Array.isArray(data.messages)) {
+          setMessages(data.messages)
+        }
+      })
+      .catch(() => {})
+  }, [language])
+ 
+  useEffect(() => {
+    if (chatRef.current) {
+      chatRef.current.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' })
+    }
+  }, [messages, loading])
+ 
+  function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    setInput(e.target.value)
+    const el = e.target
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+  }
+ 
+  function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      send()
+    }
+  }
+ 
+  function fill(text: string) {
+    setInput(text)
+    textareaRef.current?.focus()
+  }
+ 
   async function downloadSynopsis() {
     if (messages.length < 2) return
     setDownloading(true)
@@ -193,7 +239,7 @@ export default function Home() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'DelphAI_Synopsis.docx'
+      a.download = 'DelphAI_Synopsis.html'
       a.click()
       URL.revokeObjectURL(url)
     } catch {
@@ -202,79 +248,24 @@ export default function Home() {
       setDownloading(false)
     }
   }
-
-  const chatRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  const prevLanguageRef = useRef('English')
-
-  useEffect(() => {
-    setSuggestions(getRandomSuggestions(4, language))
-    setWelcomeText(getRandomWelcome(language))
-
-    const prev = prevLanguageRef.current
-    prevLanguageRef.current = language
-
-    if (prev === language || messages.length === 0) return
-
-    // Translate existing messages retroactively
-    fetch('/api/translate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages, language }),
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.messages && Array.isArray(data.messages)) {
-          setMessages(data.messages)
-        }
-      })
-      .catch(() => {})
-  }, [language])
-
-  useEffect(() => {
-    if (chatRef.current) {
-      chatRef.current.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' })
-    }
-  }, [messages, loading])
-
-  function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setInput(e.target.value)
-    const el = e.target
-    el.style.height = 'auto'
-    el.style.height = Math.min(el.scrollHeight, 120) + 'px'
-  }
-
-  function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      send()
-    }
-  }
-
-  function fill(text: string) {
-    setInput(text)
-    textareaRef.current?.focus()
-  }
-
+ 
   async function send() {
     const text = input.trim()
     if (!text || loading) return
-
+ 
     const newMessages: Message[] = [...messages, { role: 'user', content: text }]
     setMessages(newMessages)
     setInput('')
     setSuggestionsVisible(false)
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
     setLoading(true)
-
+ 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: newMessages, language }),
       })
-
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setMessages([...newMessages, { role: 'assistant', content: data.text }])
@@ -288,7 +279,7 @@ export default function Home() {
       textareaRef.current?.focus()
     }
   }
-
+ 
   if (ageVerified === null) {
     return (
       <div className={styles.ageGate}>
@@ -309,7 +300,7 @@ export default function Home() {
       </div>
     )
   }
-
+ 
   if (ageVerified === false) {
     return (
       <div className={styles.ageGate}>
@@ -323,7 +314,7 @@ export default function Home() {
       </div>
     )
   }
-
+ 
   return (
     <div className={styles.app}>
       <header className={styles.header}>
@@ -344,13 +335,17 @@ export default function Home() {
             className={styles.synopsisBtn}
             onClick={downloadSynopsis}
             disabled={downloading}
-            title="Download conversation synopsis as Word document"
+            title="Download conversation synopsis"
           >
-            {downloading ? '...' : 'Download synopsis'}
+            {downloading ? '...' :
+              language === 'Dutch' ? 'Download samenvatting' :
+              language === 'French' ? 'Télécharger le résumé' :
+              language === 'German' ? 'Zusammenfassung herunterladen' :
+              'Download synopsis'}
           </button>
         )}
       </header>
-
+ 
       <div className={styles.chat} ref={chatRef}>
         <div className={styles.welcomeBlock}>
           <div className={styles.welcomeText}>
@@ -380,12 +375,16 @@ export default function Home() {
             </div>
           )}
         </div>
-
+ 
         {messages.map((msg, i) => {
           if (msg.role === 'user') {
             return (
               <div key={i} className={`${styles.msg} ${styles.user}`}>
-                <span className={styles.meta}>You</span>
+                <span className={styles.meta}>
+                  {language === 'Dutch' ? 'Jij' :
+                   language === 'French' ? 'Vous' :
+                   language === 'German' ? 'Sie' : 'You'}
+                </span>
                 <div className={`${styles.bubble} ${styles.userBubble}`}>{msg.content}</div>
               </div>
             )
@@ -399,7 +398,7 @@ export default function Home() {
             </div>
           )
         })}
-
+ 
         {loading && (
           <div className={`${styles.msg} ${styles.ai}`}>
             <span className={styles.meta}>DelphAI</span>
@@ -411,7 +410,7 @@ export default function Home() {
           </div>
         )}
       </div>
-
+ 
       <div className={styles.bottom}>
         <div className={styles.row}>
           <textarea
@@ -429,14 +428,16 @@ export default function Home() {
             rows={1}
           />
           <button className={styles.send} onClick={send} disabled={loading || !input.trim()}>
-            Send
+            {language === 'Dutch' ? 'Verstuur' :
+             language === 'French' ? 'Envoyer' :
+             language === 'German' ? 'Senden' : 'Send'}
           </button>
         </div>
       </div>
     </div>
   )
 }
-
+ 
 function DelphAILogo({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
