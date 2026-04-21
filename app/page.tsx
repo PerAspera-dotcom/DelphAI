@@ -225,9 +225,13 @@ export default function Home() {
  
     const sendMode: Mode = isCustomInReader ? 'philosopher' : (activeMode || mode || 'philosopher')
     if (isCustomInReader) setActiveMode('philosopher')
-    // Never switch mode for suggestion clicks
  
-    const newMessages: Message[] = [...messages, { role: 'user', content: trimmed }]
+    // In reader mode, mark non-custom messages so the AI knows not to switch modes
+    const messageContent = (!isCustomInReader && sendMode === 'reader')
+      ? trimmed + ' [READER_SUGGESTION]'
+      : trimmed
+ 
+    const newMessages: Message[] = [...messages, { role: 'user', content: messageContent }]
     setMessages(newMessages)
     setInput('')
     setSuggestionsVisible(false)
@@ -258,7 +262,7 @@ export default function Home() {
   }
  
   function handleSuggestionClick(text: string) {
-    send(text + ' [READER_SUGGESTION]', false)
+    send(text, false)
   }
  
   function handleCustomInput() {
