@@ -426,3 +426,182 @@
   padding-bottom: 4px;
   border-bottom: 0.5px solid var(--border);
 }
+
+/* ── Mode selection gate ── */
+.modeGate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding: 2rem 1.5rem;
+  gap: 2rem;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.modeGateHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.modeGateTitle {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--text-primary);
+}
+
+.modeGateTitle span { color: #4a6741; }
+
+.modeGateSubtitle {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  font-style: italic;
+}
+
+.modeCards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+.modeCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-family: var(--font-sans);
+}
+
+.modeCard:hover {
+  border-color: #4a6741;
+}
+
+.modeCardTitle {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  color: var(--text-primary);
+  font-weight: 400;
+}
+
+.modeCardDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.modeCardNote {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-style: italic;
+  line-height: 1.5;
+  padding-top: 8px;
+  border-top: 0.5px solid var(--border);
+  width: 100%;
+}
+
+/* ── Mode badge ── */
+.modeBadge {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 3px 9px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.modeBadgePhilosopher {
+  background: #e8f0e8;
+  color: #4a6741;
+}
+
+.modeBadgeReader {
+  background: #e8eef5;
+  color: #3a5a7a;
+}
+
+/* ── Reader mode bubble ── */
+.readerBubble {
+  border-left-color: #3a5a7a !important;
+}
+
+/* ── Reader mode suggestions ── */
+.readerSuggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 8px;
+  max-width: 90%;
+}
+
+.readerSugLabel {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 2px;
+}
+
+.readerSugBtn {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  background: transparent;
+  border: 0.5px solid var(--border);
+  border-radius: 7px;
+  padding: 8px 12px;
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.45;
+  transition: border-color 0.15s, color 0.15s;
+  color: var(--text-secondary);
+}
+
+.readerSugAffirm {
+  border-color: #c8d8c0;
+  color: #3a5a3a;
+}
+
+.readerSugAffirm:hover {
+  border-color: #4a6741;
+  color: #4a6741;
+}
+
+.readerSugNegate {
+  border-color: #d8c8c0;
+  color: #6a3a2a;
+}
+
+.readerSugNegate:hover {
+  border-color: #8a4a3a;
+  color: #8a4a3a;
+}
+
+.readerSugMore {
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
+
+.readerSugMore:hover {
+  border-color: #3a5a7a;
+  color: #3a5a7a;
+}
+
+.readerSugCustomNote {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-style: italic;
+  margin-top: 2px;
+}
