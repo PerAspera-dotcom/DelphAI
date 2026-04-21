@@ -1,45 +1,45 @@
 'use client'
-
+ 
 import { useState, useRef, useEffect } from 'react'
 import styles from './page.module.css'
-
+ 
 type Message = { role: 'user' | 'assistant'; content: string }
 type Mode = 'philosopher' | 'reader'
 type Suggestions = { affirmative: string; negative: string; more: string[] }
-
+ 
 const FIXED_SUGGESTION: Record<string, string> = {
   English: 'What is wrong with this world?',
   Dutch: 'Wat is er mis met deze wereld?',
   French: "Qu'est-ce qui ne va pas dans ce monde?",
   German: 'Was stimmt nicht mit dieser Welt?',
 }
-
+ 
 const SUGGESTION_POOL: Record<string, string[]> = {
   English: ['What is time?','What is meaning?','What is value?','Why does something feel right or wrong?','What is justice?','What is the self?','Is free will real?','What is consciousness?','Why do we fear death?','What do we owe each other?','Can we ever truly know anything?','What makes a life well-lived?','Why is there something rather than nothing?','What is beauty?','Is happiness the point of life?','What is truth?','Why do good people do bad things?','What is power?','Can violence ever be justified?','What is love?','Why do humans need meaning?','Is morality invented or discovered?'],
   Dutch: ['Wat is tijd?','Wat is betekenis?','Wat is waarde?','Waarom voelt iets goed of fout?','Wat is rechtvaardigheid?','Wat is het zelf?','Is vrije wil echt?','Wat is bewustzijn?','Waarom zijn we bang voor de dood?','Wat zijn we elkaar verschuldigd?','Kunnen we ooit iets echt weten?','Wat maakt een leven de moeite waard?','Waarom bestaat er iets in plaats van niets?','Wat is schoonheid?','Is geluk het doel van het leven?','Wat is waarheid?','Waarom doen goede mensen slechte dingen?','Wat is macht?','Kan geweld ooit gerechtvaardigd zijn?','Wat is liefde?','Waarom hebben mensen betekenis nodig?','Is moraliteit uitgevonden of ontdekt?'],
   French: ["Qu'est-ce que le temps?","Qu'est-ce que le sens?","Qu'est-ce que la valeur?",'Pourquoi quelque chose semble-t-il juste ou faux?',"Qu'est-ce que la justice?","Qu'est-ce que le soi?",'Le libre arbitre est-il réel?',"Qu'est-ce que la conscience?",'Pourquoi craignons-nous la mort?','Que nous devons-nous mutuellement?','Peut-on jamais vraiment savoir quelque chose?',"Qu'est-ce qui rend une vie bien vécue?","Pourquoi y a-t-il quelque chose plutôt que rien?","Qu'est-ce que la beauté?",'Le bonheur est-il le but de la vie?',"Qu'est-ce que la vérité?",'Pourquoi les bonnes personnes font-elles de mauvaises choses?',"Qu'est-ce que le pouvoir?",'La violence peut-elle jamais être justifiée?',"Qu'est-ce que l'amour?",'Pourquoi les humains ont-ils besoin de sens?','La moralité est-elle inventée ou découverte?'],
   German: ['Was ist Zeit?','Was ist Bedeutung?','Was ist Wert?','Warum fühlt sich etwas richtig oder falsch an?','Was ist Gerechtigkeit?','Was ist das Selbst?','Ist freier Wille real?','Was ist Bewusstsein?','Warum fürchten wir den Tod?','Was schulden wir einander?','Können wir jemals wirklich etwas wissen?','Was macht ein Leben lebenswert?','Warum gibt es etwas statt nichts?','Was ist Schönheit?','Ist Glück der Sinn des Lebens?','Was ist Wahrheit?','Warum tun gute Menschen schlechte Dinge?','Was ist Macht?','Kann Gewalt jemals gerechtfertigt sein?','Was ist Liebe?','Warum brauchen Menschen Bedeutung?','Ist Moral erfunden oder entdeckt?'],
 }
-
+ 
 const WELCOME_POOL: Record<string, string[]> = {
   English: ['A friendly voice in the forest of the mind.','Where the abyss also talks back.','Where does your mind take us today?','Putting the AI back in Aesop.','Can you ask Alexander to get out of our sun?','The first step out of the basement or the first step back into it.'],
   Dutch: ['Een vriendelijke stem in het woud van de geest.','Waar de afgrond ook terugpraat.','Waarheen brengen jouw gedachten ons vandaag?','De eerste stap uit de kelder of de eerste stap terug naar binnen.','Denken is het begin van alles.','Waar vragen groter worden dan antwoorden.'],
   French: ["Une voix amicale dans la forêt de l'esprit.","Où l'abîme répond aussi.","Où votre esprit nous emmène-t-il aujourd'hui?",'Le premier pas hors du sous-sol ou le premier pas pour y retourner.',"Penser, c'est le début de tout.",'Là où les questions deviennent plus grandes que les réponses.'],
   German: ['Eine freundliche Stimme im Wald des Geistes.','Wo der Abgrund auch zurückspricht.','Wohin nimmt uns dein Geist heute?','Der erste Schritt aus dem Keller oder der erste Schritt herein.','Denken ist der Anfang von allem.','Wo Fragen größer werden als Antworten.'],
 }
-
+ 
 function getRandomSuggestions(count: number, lang: string): string[] {
   const pool = SUGGESTION_POOL[lang] ?? SUGGESTION_POOL['English']
   const fixed = FIXED_SUGGESTION[lang] ?? FIXED_SUGGESTION['English']
   const shuffled = [...pool].sort(() => Math.random() - 0.5)
   return [fixed, ...shuffled.slice(0, count)]
 }
-
+ 
 function getRandomWelcome(lang: string): string {
   const pool = WELCOME_POOL[lang] ?? WELCOME_POOL['English']
   return pool[Math.floor(Math.random() * pool.length)]
 }
-
+ 
 function parseSuggestions(text: string): { clean: string; suggestions: Suggestions | null } {
   const match = text.match(/\[SUGGESTIONS\]([\s\S]*?)\[\/SUGGESTIONS\]/i)
   if (!match) return { clean: text, suggestions: null }
@@ -51,7 +51,7 @@ function parseSuggestions(text: string): { clean: string; suggestions: Suggestio
     return { clean, suggestions: null }
   }
 }
-
+ 
 function formatInline(text: string): React.ReactNode[] {
   return text.split(/(\*[^*\n]+\*)/g).map((part, i) => {
     if (part.startsWith('*') && part.endsWith('*')) {
@@ -60,7 +60,7 @@ function formatInline(text: string): React.ReactNode[] {
     return <span key={i}>{part}</span>
   })
 }
-
+ 
 function AIMessage({ content }: { content: string }) {
   const lines = content.split('\n')
   const elements: React.ReactNode[] = []
@@ -84,7 +84,7 @@ function AIMessage({ content }: { content: string }) {
   }
   return <div className={styles.aiText}>{elements}</div>
 }
-
+ 
 function PhilosopherLogo({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
@@ -102,7 +102,7 @@ function PhilosopherLogo({ size }: { size: number }) {
     </svg>
   )
 }
-
+ 
 function ReaderLogo({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
@@ -123,7 +123,7 @@ function ReaderLogo({ size }: { size: number }) {
     </svg>
   )
 }
-
+ 
 function DelphAILogo({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
@@ -137,7 +137,7 @@ function DelphAILogo({ size }: { size: number }) {
     </svg>
   )
 }
-
+ 
 export default function Home() {
   const [ageVerified, setAgeVerified] = useState<boolean | null>(null)
   const [mode, setMode] = useState<Mode | null>(null)
@@ -152,9 +152,10 @@ export default function Home() {
   const [suggestionsVisible, setSuggestionsVisible] = useState(true)
   const [activeMode, setActiveMode] = useState<Mode>('philosopher')
   const chatRef = useRef<HTMLDivElement>(null)
+  const filledFromSuggestionRef = useRef(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const prevLanguageRef = useRef('English')
-
+ 
   useEffect(() => {
     setSuggestions(getRandomSuggestions(4, language))
     setWelcomeText(getRandomWelcome(language))
@@ -169,24 +170,34 @@ export default function Home() {
       if (data.messages && Array.isArray(data.messages)) setMessages(data.messages)
     }).catch(() => {})
   }, [language])
-
+ 
   useEffect(() => {
     if (chatRef.current) chatRef.current.scrollTo({ top: chatRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages, loading])
-
+ 
   function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    filledFromSuggestionRef.current = false
     setInput(e.target.value)
     const el = e.target
     el.style.height = 'auto'
     el.style.height = Math.min(el.scrollHeight, 120) + 'px'
   }
-
+ 
   function handleKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input, false) }
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      const isCustom = activeMode === 'reader' && !filledFromSuggestionRef.current
+      filledFromSuggestionRef.current = false
+      send(input, isCustom)
+    }
   }
-
-  function fill(text: string) { setInput(text); textareaRef.current?.focus() }
-
+ 
+  function fill(text: string) {
+    filledFromSuggestionRef.current = true
+    setInput(text)
+    textareaRef.current?.focus()
+  }
+ 
   async function downloadSynopsis() {
     if (messages.length < 2) return
     setDownloading(true)
@@ -207,21 +218,21 @@ export default function Home() {
     } catch { alert('Could not generate synopsis. Please try again.') }
     finally { setDownloading(false) }
   }
-
+ 
   async function send(text: string, isCustomInReader: boolean = false) {
     const trimmed = text.trim()
     if (!trimmed || loading) return
-
+ 
     const sendMode: Mode = isCustomInReader ? 'philosopher' : (activeMode || mode || 'philosopher')
     if (isCustomInReader) setActiveMode('philosopher')
-
+ 
     const newMessages: Message[] = [...messages, { role: 'user', content: trimmed }]
     setMessages(newMessages)
     setInput('')
     setSuggestionsVisible(false)
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
     setLoading(true)
-
+ 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -230,7 +241,7 @@ export default function Home() {
       })
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-
+ 
       const { clean, suggestions: sugs } = parseSuggestions(data.text)
       const aiIndex = newMessages.length
       setMessages([...newMessages, { role: 'assistant', content: clean }])
@@ -244,16 +255,16 @@ export default function Home() {
       textareaRef.current?.focus()
     }
   }
-
+ 
   function handleSuggestionClick(text: string) {
     send(text, false)
   }
-
+ 
   function handleCustomInput() {
     if (!input.trim()) return
     send(input, activeMode === 'reader')
   }
-
+ 
   // Gate 1: Commitment
   if (ageVerified === null) {
     return (
@@ -275,7 +286,7 @@ export default function Home() {
       </div>
     )
   }
-
+ 
   if (ageVerified === false) {
     return (
       <div className={styles.ageGate}>
@@ -287,7 +298,7 @@ export default function Home() {
       </div>
     )
   }
-
+ 
   // Gate 2: Mode selection
   if (mode === null) {
     return (
@@ -314,7 +325,7 @@ export default function Home() {
       </div>
     )
   }
-
+ 
   // Main chat
   return (
     <div className={styles.app}>
@@ -342,7 +353,7 @@ export default function Home() {
           </button>
         )}
       </header>
-
+ 
       <div className={styles.chat} ref={chatRef}>
         <div className={styles.welcomeBlock}>
           <div className={styles.welcomeText}>
@@ -364,7 +375,7 @@ export default function Home() {
             </div>
           )}
         </div>
-
+ 
         {messages.map((msg, i) => {
           if (msg.role === 'user') {
             return (
@@ -399,7 +410,7 @@ export default function Home() {
             </div>
           )
         })}
-
+ 
         {loading && (
           <div className={`${styles.msg} ${styles.ai}`}>
             <span className={styles.meta}>DelphAI</span>
@@ -409,7 +420,7 @@ export default function Home() {
           </div>
         )}
       </div>
-
+ 
       <div className={styles.bottom}>
         <div className={styles.row}>
           <textarea
