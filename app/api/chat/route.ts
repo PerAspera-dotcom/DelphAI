@@ -287,15 +287,39 @@ type Message = {
   content: string
 }
 
+function isQuestion(text: string): boolean {
+  const trimmed = text.trim()
+  // Ends with question mark
+  if (trimmed.endsWith('?')) return true
+  // Starts with question word and no strong position markers
+  const questionStarters = /^(what|who|why|how|when|where|is|are|can|could|should|would|do|does|did|has|have|will|was|were|which|whose)\b/i
+  const positionMarkers = /\b(i think|i believe|i feel|i consider|in my view|my view|my position|i would say|i argue|it seems to me)\b/i
+  if (questionStarters.test(trimmed) && !positionMarkers.test(trimmed)) return true
+  return false
+}
+
+function injectEntryDirective(messages: Message[]): Message[] {
+  if (messages.length !== 1) return messages
+  const first = messages[0]
+  if (first.role !== 'user') return messages
+  const question = isQuestion(first.content)
+  const directive = question
+    ? '\n\n[SYSTEM DIRECTIVE: This is an open question without a stated position. You MUST use Exploratory Coaching Mode. Do NOT apply the Formal Dialogue Protocol. Present 3-4 framework sketches and ask which resonates. Do not pressure-test anything.]'
+    : '\n\n[SYSTEM DIRECTIVE: This is a statement or position. Apply the Formal Dialogue Protocol immediately.]'
+  return [{ ...first, content: first.content + directive }]
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { messages, language } = await req.json() as { messages: Message[], language: string }
+
+    const processedMessages = injectEntryDirective(messages)
 
     const response = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
       system: SYSTEM + `\n\nRespond entirely in ${language}. All philosophical terms, citations, and section headers must also be in ${language}.`,
-      messages,
+      messages: processedMessages,
     })
 
     const text = response.content

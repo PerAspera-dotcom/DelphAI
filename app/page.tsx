@@ -206,9 +206,30 @@ export default function Home() {
   const chatRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  const prevLanguageRef = useRef('English')
+
   useEffect(() => {
     setSuggestions(getRandomSuggestions(4, language))
     setWelcomeText(getRandomWelcome(language))
+
+    const prev = prevLanguageRef.current
+    prevLanguageRef.current = language
+
+    if (prev === language || messages.length === 0) return
+
+    // Translate existing messages retroactively
+    fetch('/api/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, language }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.messages && Array.isArray(data.messages)) {
+          setMessages(data.messages)
+        }
+      })
+      .catch(() => {})
   }, [language])
 
   useEffect(() => {
