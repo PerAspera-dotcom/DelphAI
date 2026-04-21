@@ -225,6 +225,7 @@ export default function Home() {
  
     const sendMode: Mode = isCustomInReader ? 'philosopher' : (activeMode || mode || 'philosopher')
     if (isCustomInReader) setActiveMode('philosopher')
+    // Never switch mode for suggestion clicks
  
     const newMessages: Message[] = [...messages, { role: 'user', content: trimmed }]
     setMessages(newMessages)
@@ -257,7 +258,7 @@ export default function Home() {
   }
  
   function handleSuggestionClick(text: string) {
-    send(text, false)
+    send(text + ' [READER_SUGGESTION]', false)
   }
  
   function handleCustomInput() {
@@ -381,7 +382,7 @@ export default function Home() {
             return (
               <div key={i} className={`${styles.msg} ${styles.user}`}>
                 <span className={styles.meta}>{language === 'Dutch' ? 'Jij' : language === 'French' ? 'Vous' : language === 'German' ? 'Sie' : 'You'}</span>
-                <div className={`${styles.bubble} ${styles.userBubble}`}>{msg.content}</div>
+                <div className={`${styles.bubble} ${styles.userBubble}`}>{msg.content.replace(' [READER_SUGGESTION]', '')}</div>
               </div>
             )
           }
@@ -440,3 +441,4 @@ export default function Home() {
     </div>
   )
 }
+ 

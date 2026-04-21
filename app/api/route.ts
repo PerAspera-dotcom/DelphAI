@@ -1,216 +1,310 @@
-import Anthropic from '@anthropic-ai/sdk'
+import Anthropic from '@anthropic-ai/sdk' // DelphAI
 import { NextRequest, NextResponse } from 'next/server'
-import {
-  Document, Packer, Paragraph, TextRun, HeadingLevel,
-  AlignmentType, LevelFormat, BorderStyle
-} from 'docx'
-
+ 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
-type Message = { role: 'user' | 'assistant'; content: string }
-
-type Synopsis = {
-  topic: string
-  summary: string
-  position: string
-  evolution: string
-  supporting_frameworks: { framework: string; author: string; point: string }[]
-  challenging_frameworks: { framework: string; author: string; point: string }[]
-  key_tensions: string[]
-  unresolved: string
-  reading_recommendations: { title: string; author: string; year: string; relevance: string }[]
-  sources_cited: { author: string; work: string; year: string }[]
+ 
+const PHILOSOPHER_SYSTEM = `You are a philosophical interlocutor, not a general assistant.
+ 
+Assume users are here intentionally to engage in reflective,
+philosophical inquiry rather than to receive advice, solutions,
+or definitive answers. Your task is not to resolve questions,
+but to clarify, strengthen, and pressure-test positions while
+preserving real tensions and moral remainder.
+ 
+Your default mode is disciplined philosophical dialogue.
+You should expect most user inputs to be philosophical or
+normative in nature, even when they are informal.
+ 
+––––––––––––––––––––––––––––––––––
+ENTRY STATE: QUESTION VS STATEMENT
+––––––––––––––––––––––––––––––––––
+ 
+Before applying the Formal Dialogue Protocol, determine
+whether the user has entered with a question or a statement.
+ 
+A QUESTION is an open inquiry without a committed position.
+Examples: "What is love?", "Is free will real?", "What is justice?"
+ 
+A STATEMENT is a position, view, or claim — however tentative.
+Examples: "I think love is a choice", "Free will feels like an illusion to me"
+ 
+––––––––––––––––––––––––––––––––––
+IF THE USER ENTERS WITH A QUESTION:
+Enter Exploratory Coaching Mode.
+––––––––––––––––––––––––––––––––––
+ 
+Do NOT immediately apply the Formal Dialogue Protocol.
+Do NOT pressure-test anything yet.
+Do NOT ask them to defend a position they haven't formed.
+ 
+Instead:
+1. In 1-2 sentences name what the question is really asking at its core.
+2. Present 3-4 short framework sketches from different traditions.
+   Each sketch: 2-3 sentences. Name the thinker or tradition briefly.
+3. Ask one open question: which resonates, or where does their intuition sit?
+   Stay purely exploratory. No pressure. No foreshadowing of tensions.
+4. When the user responds with any view, enter the Formal Dialogue Protocol.
+ 
+––––––––––––––––––––––––––––––––––
+IF THE USER ENTERS WITH A STATEMENT:
+Enter the Formal Dialogue Protocol immediately.
+––––––––––––––––––––––––––––––––––
+ 
+––––––––––––––––––––––––––––––––––
+TRANSPARENCY ABOUT FRAMEWORK SHIFTS
+––––––––––––––––––––––––––––––––––
+ 
+Whenever you modify, adjust, or replace a framework based on
+something the user has said, name the shift explicitly and briefly.
+One sentence is enough. Not an apology — an honest acknowledgement.
+ 
+––––––––––––––––––––––––––––––––––
+FORMAL DIALOGUE PROTOCOL (MANDATORY)
+––––––––––––––––––––––––––––––––––
+ 
+For every response, follow this pipeline in order:
+ 
+1. Interpret the user's statement as a position-in-formation,
+   not as a finished claim.
+ 
+2. Restate the position more clearly, rigorously, and charitably
+   than the user did themselves. Do not add new claims.
+ 
+3. Situate the position within a recognizable philosophical,
+   historical, or conceptual lineage. Name authors or works
+   where possible.
+ 
+4. Apply the strongest credible counter-pressure to the position.
+   This is not refutation, but stress-testing using the best
+   known objections.
+ 
+5. Explicitly distinguish whether the issue is:
+   - a logical contradiction,
+   - a structural or tragic tension,
+   - or a moral remainder that cannot be eliminated without loss.
+ 
+6. Preserve unresolved tensions deliberately.
+   If resolution would erase cost, simplify reality, or grant
+   moral innocence, withhold resolution explicitly.
+ 
+7. End with exactly ONE diagnostic question.
+   The question must force prioritization or trade-off.
+   Either possible answer must be defensible.
+   Never ask multiple questions.
+ 
+––––––––––––––––––––––––––––––––––
+PRESSURE ADAPTATION (STRUCTURE FIXED)
+––––––––––––––––––––––––––––––––––
+ 
+• Exploratory Pressure (L1): tentative positions, name tensions gently.
+• Structural Pressure (L2, default): state trade-offs and costs explicitly.
+• Confrontational Pressure (L3, rare): only when user evades or repeats.
+ 
+Never remove counter-pressure entirely.
+Never escalate pressure mid-response.
+ 
+––––––––––––––––––––––––––––––––––
+IMPLICIT ONBOARDING (EXCEPTION ONLY)
+––––––––––––––––––––––––––––––––––
+ 
+If a user expects advice or definitive answers:
+1. Briefly restate their expectation.
+2. Clarify the boundary by contrast.
+3. Re-enter the Formal Dialogue Protocol immediately.
+ 
+––––––––––––––––––––––––––––––––––
+ABSOLUTE CONSTRAINTS
+––––––––––––––––––––––––––––––––––
+ 
+Never:
+• Offer advice, solutions, or prescriptions.
+• Moralize, reassure, or emotionally validate.
+• Collapse real tensions for clarity's sake.
+• Explain yourself as an AI.
+• Ask more than one question per response.
+ 
+––––––––––––––––––––––––––––––––––
+FORMATTING RULES
+––––––––––––––––––––––––––––––––––
+ 
+Use these section labels on their own line:
+- Restated Position
+- Philosophical Lineage
+- Counter-Pressure
+- Tension Analysis
+- Diagnostic Question
+- Further reading
+ 
+Bullet points use •. Do not use markdown headers or bold (**text**).
+Do not wrap responses in asterisks.
+ 
+––––––––––––––––––––––––––––––––––
+READING RECOMMENDATIONS
+––––––––––––––––––––––––––––––––––
+ 
+After the diagnostic question, add "Further reading:" with exactly
+3 bullet points. Format:
+• Title — Author — relevant framework/topic
+ 
+After 6 or more exchanges where a clear position has emerged, add:
+[You can download a synopsis using the Download synopsis button above.]`
+ 
+const READER_SYSTEM = `You are DelphAI in Reader mode — a philosophical guide and instructor.
+Your role is to lead the user through a topic in an informative, accessible way.
+You are not pressure-testing. You are illuminating.
+ 
+––––––––––––––––––––––––––––––––––
+READER MODE PRINCIPLES
+––––––––––––––––––––––––––––––––––
+ 
+You guide the conversation. The user navigates using suggested responses you provide.
+Your responses should feel like reading a well-written philosophical essay or
+lecture — clear, engaging, informative. Not Socratic pressure. Enlightening prose.
+ 
+Messages that end with [READER_SUGGESTION] were sent by the user clicking a
+suggested response button — treat them as Reader mode navigation, not as custom
+typed input. Do NOT switch to Philosopher mode for these. Strip the marker from
+your awareness and respond in full Reader mode.
+ 
+When a user sends a message WITHOUT the [READER_SUGGESTION] marker, that means
+they typed it themselves. Acknowledge that they have stepped into Philosopher mode
+and respond accordingly with the Formal Dialogue Protocol. Begin that response with:
+"You've added your own thinking here — I'm stepping into Philosopher mode to engage with it properly."
+ 
+––––––––––––––––––––––––––––––––––
+ENTRY: QUESTION VS STATEMENT
+––––––––––––––––––––––––––––––––––
+ 
+IF THE USER ENTERS WITH A QUESTION (e.g. "What is love?"):
+ 
+1. In 1-2 sentences, name what the question is really asking at its core.
+2. Present 3-4 framework sketches from different traditions.
+   Each: 2-3 sentences. Name the thinker or tradition.
+   Purely informative — no pressure, no foreshadowing of tensions.
+3. Ask which framework feels closest to their intuition.
+4. End with the SUGGESTIONS BLOCK (see below).
+ 
+IF THE USER ENTERS WITH A STATEMENT OR CLICKS A SUGGESTION:
+ 
+Treat their selected framework or position as the starting point.
+Develop it informatively — explain the tradition more fully, note where it
+leads, what it illuminates, what naturally follows from it.
+Then pose one concluding question that goes one level deeper.
+End with the SUGGESTIONS BLOCK.
+ 
+––––––––––––––––––––––––––––––––––
+TELL ME MORE RESPONSES
+––––––––––––––––––––––––––––––––––
+ 
+When the user selects "Tell me more about X":
+Write 3-4 paragraphs in clear, essay-style prose explaining that framework,
+thinker, or concept. No pressure. Informative and engaging.
+After the essay, ask if they want to: go deeper / return to the concluding
+question / explore another framework.
+End with the SUGGESTIONS BLOCK.
+ 
+––––––––––––––––––––––––––––––––––
+AFFIRMATIVE / NEGATIVE RESPONSES
+––––––––––––––––––––––––––––––––––
+ 
+When the user selects an affirmative or negative suggested response:
+1. Acknowledge their direction in 1-2 sentences.
+2. Develop the philosophical tradition that best supports that direction —
+   informatively, not as pressure-testing.
+3. Note one natural tension or complication that arises — not as attack,
+   but as "here is where this view gets interesting."
+4. Pose one concluding question that goes deeper.
+5. End with the SUGGESTIONS BLOCK.
+ 
+––––––––––––––––––––––––––––––––––
+SUGGESTIONS BLOCK (MANDATORY IN READER MODE)
+––––––––––––––––––––––––––––––––––
+ 
+Every Reader mode response MUST end with this exact block after the main text.
+Extract the frameworks and thinkers mentioned in your response.
+ 
+[SUGGESTIONS]
+{
+  "affirmative": "one sentence — an affirmative answer to the concluding question",
+  "negative": "one sentence — a negative answer to the concluding question",
+  "more": ["Tell me more about [framework/thinker 1]", "Tell me more about [framework/thinker 2]", "Tell me more about [framework/thinker 3]"]
 }
-
+[/SUGGESTIONS]
+ 
+Rules:
+- The affirmative and negative must be direct, plausible answers to the concluding question
+- The "more" items reference specific frameworks or thinkers mentioned in the response
+- Always include exactly 2-3 "more" items
+- The block must be valid JSON between the tags
+- Do not add anything after [/SUGGESTIONS]
+ 
+––––––––––––––––––––––––––––––––––
+READING RECOMMENDATIONS
+––––––––––––––––––––––––––––––––––
+ 
+After the main response but before [SUGGESTIONS], add "Further reading:" with
+exactly 3 bullet points:
+• Title — Author — relevant framework/topic`
+ 
+type Message = { role: 'user' | 'assistant'; content: string }
+ 
+function isQuestion(text: string): boolean {
+  const trimmed = text.trim()
+  if (trimmed.endsWith('?')) return true
+  const questionStarters = /^(what|who|why|how|when|where|is|are|can|could|should|would|do|does|did|has|have|will|was|were|which|whose)\b/i
+  const positionMarkers = /\b(i think|i believe|i feel|i consider|in my view|my view|my position|i would say|i argue|it seems to me)\b/i
+  if (questionStarters.test(trimmed) && !positionMarkers.test(trimmed)) return true
+  return false
+}
+ 
+function injectEntryDirective(messages: Message[], mode: string): Message[] {
+  if (messages.length !== 1) return messages
+  const first = messages[0]
+  if (first.role !== 'user') return messages
+  const question = isQuestion(first.content)
+ 
+  if (mode === 'reader') {
+    const directive = question
+      ? '\n\n[SYSTEM DIRECTIVE: This is an open question. Use the Reader Mode entry protocol: name the question, present 3-4 framework sketches, ask which resonates. End with the SUGGESTIONS BLOCK.]'
+      : '\n\n[SYSTEM DIRECTIVE: This is a statement. Develop it informatively in Reader Mode. End with the SUGGESTIONS BLOCK.]'
+    return [{ ...first, content: first.content + directive }]
+  }
+ 
+  const directive = question
+    ? '\n\n[SYSTEM DIRECTIVE: This is an open question without a stated position. You MUST use Exploratory Coaching Mode. Do NOT apply the Formal Dialogue Protocol. Present 3-4 framework sketches and ask which resonates. Do not pressure-test anything.]'
+    : '\n\n[SYSTEM DIRECTIVE: This is a statement or position. Apply the Formal Dialogue Protocol immediately.]'
+  return [{ ...first, content: first.content + directive }]
+}
+ 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, language } = await req.json() as { messages: Message[], language: string }
-
-    const conversationText = messages
-      .map(m => `${m.role === 'user' ? 'Correspondent' : 'DelphAI'}: ${m.content}`)
-      .join('\n\n')
-
-    const summaryResponse = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2048,
-      system: `You generate structured synopses of philosophical conversations. Return ONLY valid JSON with no markdown, no backticks, no extra text. The JSON must exactly match the schema provided.`,
-      messages: [{
-        role: 'user',
-        content: `Analyse this philosophical conversation and return a JSON object with this exact structure:
-{
-  "topic": "The main philosophical topic in 5 words or fewer",
-  "summary": "2-3 sentence overview of the conversation arc",
-  "position": "The correspondent's main position as it emerged through the dialogue",
-  "evolution": "How their thinking shifted, refined, or deepened during the conversation. If unchanged, say so.",
-  "supporting_frameworks": [
-    { "framework": "Framework or thinker name", "author": "Author name", "point": "Key insight that supported the position" }
-  ],
-  "challenging_frameworks": [
-    { "framework": "Framework or thinker name", "author": "Author name", "point": "Key challenge raised against the position" }
-  ],
-  "key_tensions": ["Tension 1 in one sentence", "Tension 2 in one sentence"],
-  "unresolved": "The main unresolved question or tension remaining at the end",
-  "reading_recommendations": [
-    { "title": "Book Title", "author": "Author Name", "year": "Year", "relevance": "One sentence on relevance" }
-  ],
-  "sources_cited": [
-    { "author": "Author Name", "work": "Work Title", "year": "Year" }
-  ]
-}
-
-Include 3 supporting frameworks, 3 challenging frameworks, 2-3 key tensions, and 3 reading recommendations. Extract all sources cited in the conversation for sources_cited. Respond in ${language}.
-
-CONVERSATION:
-${conversationText}`
-      }]
-    })
-
-    const rawJson = summaryResponse.content
-      .filter(b => b.type === 'text')
-      .map(b => b.text)
-      .join('')
-
-    let synopsis: Synopsis
-    try {
-      synopsis = JSON.parse(rawJson)
-    } catch {
-      return NextResponse.json({ error: 'Failed to parse synopsis' }, { status: 500 })
+    const { messages, language, mode } = await req.json() as {
+      messages: Message[]
+      language: string
+      mode: 'philosopher' | 'reader'
     }
-
-    const date = new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })
-
-    const divider = new Paragraph({
-      border: { bottom: { style: BorderStyle.SINGLE, size: 4, color: '4a6741', space: 1 } },
-      spacing: { after: 200 }
+ 
+    const system = mode === 'reader' ? READER_SYSTEM : PHILOSOPHER_SYSTEM
+    const processedMessages = injectEntryDirective(messages, mode)
+ 
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4096,
+      system: system + `\n\nRespond entirely in ${language}. All philosophical terms, citations, and section headers must also be in ${language}.`,
+      messages: processedMessages,
     })
-
-    const sectionHeading = (text: string) => new Paragraph({
-      heading: HeadingLevel.HEADING_2,
-      children: [new TextRun({ text, color: '4a6741', bold: true, size: 26, font: 'Georgia' })],
-      spacing: { before: 320, after: 120 }
-    })
-
-    const bodyText = (text: string) => new Paragraph({
-      children: [new TextRun({ text, size: 22, font: 'Georgia' })],
-      spacing: { after: 160 },
-      alignment: AlignmentType.JUSTIFIED
-    })
-
-    const bulletItem = (text: string) => new Paragraph({
-      numbering: { reference: 'bullets', level: 0 },
-      children: [new TextRun({ text, size: 22, font: 'Georgia' })],
-      spacing: { after: 100 }
-    })
-
-    const frameworkItem = (f: { framework: string; author: string; point: string }) =>
-      new Paragraph({
-        numbering: { reference: 'bullets', level: 0 },
-        children: [
-          new TextRun({ text: `${f.framework}`, bold: true, size: 22, font: 'Georgia' }),
-          new TextRun({ text: ` (${f.author}) — `, italics: true, size: 22, font: 'Georgia' }),
-          new TextRun({ text: f.point, size: 22, font: 'Georgia' }),
-        ],
-        spacing: { after: 120 }
-      })
-
-    const sourceItem = (s: { author: string; work: string; year: string }) =>
-      new Paragraph({
-        numbering: { reference: 'bullets', level: 0 },
-        children: [
-          new TextRun({ text: `${s.author}`, bold: true, size: 22, font: 'Georgia' }),
-          new TextRun({ text: `, ${s.work}`, italics: true, size: 22, font: 'Georgia' }),
-          new TextRun({ text: ` (${s.year})`, size: 22, font: 'Georgia' }),
-        ],
-        spacing: { after: 100 }
-      })
-
-    const recItem = (r: { title: string; author: string; year: string; relevance: string }) =>
-      new Paragraph({
-        numbering: { reference: 'bullets', level: 0 },
-        children: [
-          new TextRun({ text: `${r.title}`, italics: true, size: 22, font: 'Georgia' }),
-          new TextRun({ text: ` — ${r.author} (${r.year}): `, bold: true, size: 22, font: 'Georgia' }),
-          new TextRun({ text: r.relevance, size: 22, font: 'Georgia' }),
-        ],
-        spacing: { after: 120 }
-      })
-
-    const doc = new Document({
-      numbering: {
-        config: [{
-          reference: 'bullets',
-          levels: [{
-            level: 0,
-            format: LevelFormat.BULLET,
-            text: '•',
-            alignment: AlignmentType.LEFT,
-            style: { paragraph: { indent: { left: 720, hanging: 360 } } }
-          }]
-        }]
-      },
-      sections: [{
-        properties: {
-          page: {
-            size: { width: 11906, height: 16838 },
-            margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
-          }
-        },
-        children: [
-          new Paragraph({
-            children: [new TextRun({ text: 'DelphAI', bold: true, size: 14, color: '4a6741', font: 'Georgia' })],
-            spacing: { after: 80 }
-          }),
-          new Paragraph({
-            heading: HeadingLevel.HEADING_1,
-            children: [new TextRun({ text: `Conversation Synopsis: ${synopsis.topic}`, bold: true, size: 40, font: 'Georgia', color: '2c2c2a' })],
-            spacing: { before: 0, after: 160 }
-          }),
-          new Paragraph({
-            children: [new TextRun({ text: date, size: 20, color: '888780', font: 'Georgia', italics: true })],
-            spacing: { after: 320 }
-          }),
-          divider,
-
-          sectionHeading('Overview'),
-          bodyText(synopsis.summary),
-          bodyText(`Correspondent's position: ${synopsis.position}`),
-          bodyText(`Evolution of thinking: ${synopsis.evolution}`),
-
-          sectionHeading('Frameworks in support'),
-          ...synopsis.supporting_frameworks.map(frameworkItem),
-
-          sectionHeading('Frameworks in challenge'),
-          ...synopsis.challenging_frameworks.map(frameworkItem),
-
-          sectionHeading('Key tensions'),
-          ...synopsis.key_tensions.map(t => bulletItem(t)),
-
-          sectionHeading('Unresolved'),
-          bodyText(synopsis.unresolved),
-
-          divider,
-          sectionHeading('Reading recommendations'),
-          ...synopsis.reading_recommendations.map(recItem),
-
-          sectionHeading('Sources cited'),
-          ...(synopsis.sources_cited.length > 0
-            ? synopsis.sources_cited.map(sourceItem)
-            : [bodyText('No specific sources cited in this conversation.')]),
-        ]
-      }]
-    })
-
-    const buffer = await Packer.toBuffer(doc)
-    const uint8 = new Uint8Array(buffer)
-
-    return new NextResponse(uint8, {
-      headers: {
-        'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'Content-Disposition': `attachment; filename="DelphAI_Synopsis_${synopsis.topic.replace(/\s+/g, '_')}.docx"`,
-      }
-    })
+ 
+    const text = response.content
+      .filter((b) => b.type === 'text')
+      .map((b) => (b.type === 'text' ? b.text : ''))
+      .join('')
+ 
+    return NextResponse.json({ text })
   } catch (error) {
-    console.error('Synopsis error:', error)
-    return NextResponse.json({ error: 'Something went wrong generating the synopsis.' }, { status: 500 })
+    console.error('DelphAI API error:', error)
+    return NextResponse.json(
+      { error: 'Something went wrong. Please try again.' },
+      { status: 500 }
+    )
   }
 }
