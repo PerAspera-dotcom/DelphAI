@@ -8,6 +8,7 @@ type ChatComposerProps = {
   language: string;
   loading: boolean;
   activeMode: Mode;
+  fontSize: number;
   onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown: (e: KeyboardEvent<HTMLTextAreaElement>) => void;
   onSend: (text: string, isCustomInReader: boolean) => void;
@@ -19,6 +20,7 @@ export function ChatComposer({
   language,
   loading,
   activeMode,
+  fontSize,
   onChange,
   onKeyDown,
   onSend,
@@ -43,6 +45,7 @@ export function ChatComposer({
           className={styles.input}
           placeholder={placeholder}
           value={input}
+          style={{ fontSize }}
           onChange={onChange}
           onKeyDown={onKeyDown}
           rows={1}

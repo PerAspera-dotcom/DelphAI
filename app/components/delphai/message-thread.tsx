@@ -8,6 +8,7 @@ type MessageThreadProps = {
   language: string;
   activeMode: Mode;
   loading: boolean;
+  fontSize: number;
   onSend: (text: string, isCustomInReader: boolean) => void;
   onSuggestionClick: (text: string) => void;
 };
@@ -18,6 +19,7 @@ export function MessageThread({
   language,
   activeMode,
   loading,
+  fontSize,
   onSend,
   onSuggestionClick,
 }: MessageThreadProps) {
@@ -67,7 +69,7 @@ export function MessageThread({
           return (
             <div key={i} className={`${styles.msg} ${styles.user}`}>
               <span className={styles.meta}>{userMeta}</span>
-              <div className={`${styles.bubble} ${styles.userBubble}`}>
+              <div className={`${styles.bubble} ${styles.userBubble}`} style={{ fontSize: Math.max(13, fontSize - 1) }}>
                 {msg.content.replace(' [READER_SUGGESTION]', '')}
               </div>
             </div>
@@ -79,14 +81,16 @@ export function MessageThread({
             <span className={styles.meta}>DelphAI</span>
             <div
               className={`${styles.bubble} ${styles.aiBubble} ${activeMode === 'reader' ? styles.readerBubble : ''}`}
+              style={{ fontSize }}
             >
-              <AIMessage content={msg.content} />
+              <AIMessage content={msg.content} fontSize={fontSize} />
             </div>
             {activeMode === 'philosopher' && i === messages.length - 1 && messages.length >= 2 && (
               <div className={styles.altFrameworksBtn}>
                 <button
                   type='button'
                   className={`${styles.readerSugBtn} ${styles.readerSugFrameworks}`}
+                  style={{ fontSize: Math.max(13, fontSize - 2) }}
                   onClick={() => onSend(frameworksPrompt, false)}
                 >
                   {frameworksLabel}
@@ -99,6 +103,7 @@ export function MessageThread({
                 <button
                   type='button'
                   className={`${styles.readerSugBtn} ${styles.readerSugAffirm}`}
+                  style={{ fontSize: Math.max(13, fontSize - 2) }}
                   onClick={() => onSuggestionClick(sugs.affirmative)}
                 >
                   {sugs.affirmative}
@@ -106,6 +111,7 @@ export function MessageThread({
                 <button
                   type='button'
                   className={`${styles.readerSugBtn} ${styles.readerSugNegate}`}
+                  style={{ fontSize: Math.max(13, fontSize - 2) }}
                   onClick={() => onSuggestionClick(sugs.negative)}
                 >
                   {sugs.negative}
@@ -115,6 +121,7 @@ export function MessageThread({
                     key={j}
                     type='button'
                     className={`${styles.readerSugBtn} ${styles.readerSugMore}`}
+                    style={{ fontSize: Math.max(13, fontSize - 2) }}
                     onClick={() => onSuggestionClick(m)}
                   >
                     {m}
@@ -123,6 +130,7 @@ export function MessageThread({
                 <button
                   type='button'
                   className={`${styles.readerSugBtn} ${styles.readerSugFrameworks}`}
+                  style={{ fontSize: Math.max(13, fontSize - 2) }}
                   onClick={() => onSuggestionClick(frameworksPrompt)}
                 >
                   {frameworksLabel}

@@ -6,6 +6,11 @@ type ChatHeaderProps = {
   activeMode: Mode;
   language: string;
   onLanguageChange: (language: string) => void;
+  fontSize: number;
+  minFontSize: number;
+  maxFontSize: number;
+  onDecreaseFontSize: () => void;
+  onIncreaseFontSize: () => void;
   showSynopsis: boolean;
   downloading: boolean;
   onDownloadSynopsis: () => void;
@@ -15,6 +20,11 @@ export function ChatHeader({
   activeMode,
   language,
   onLanguageChange,
+  fontSize,
+  minFontSize,
+  maxFontSize,
+  onDecreaseFontSize,
+  onIncreaseFontSize,
   showSynopsis,
   downloading,
   onDownloadSynopsis,
@@ -49,6 +59,33 @@ export function ChatHeader({
   const langFieldLabel =
     language === 'Dutch' ? 'Taal' : language === 'French' ? 'Langue' : language === 'German' ? 'Sprache' : 'Language';
 
+  const fontSizeLabel =
+    language === 'Dutch'
+      ? 'Tekstgrootte'
+      : language === 'French'
+        ? 'Taille du texte'
+        : language === 'German'
+          ? 'Textgröße'
+          : 'Text size';
+
+  const decreaseLabel =
+    language === 'Dutch'
+      ? 'Tekst verkleinen'
+      : language === 'French'
+        ? 'Réduire le texte'
+        : language === 'German'
+          ? 'Text verkleinern'
+          : 'Decrease text size';
+
+  const increaseLabel =
+    language === 'Dutch'
+      ? 'Tekst vergroten'
+      : language === 'French'
+        ? 'Agrandir le texte'
+        : language === 'German'
+          ? 'Text vergrößern'
+          : 'Increase text size';
+
   return (
     <header className={styles.header}>
       <DelphAILogo size={32} />
@@ -61,6 +98,34 @@ export function ChatHeader({
         {modeLabel}
       </div>
       <div className={styles.headerEnd}>
+        <div className={styles.fontSizeWrap}>
+          <span className={styles.fontSizeLabel}>{fontSizeLabel}</span>
+          <div className={styles.fontSizeControl} aria-label={fontSizeLabel}>
+            <button
+              type='button'
+              className={styles.fontSizeBtn}
+              onClick={onDecreaseFontSize}
+              disabled={fontSize <= minFontSize}
+              aria-label={decreaseLabel}
+              title={decreaseLabel}
+            >
+              A-
+            </button>
+            <span className={styles.fontSizeValue} aria-hidden='true'>
+              {fontSize}
+            </span>
+            <button
+              type='button'
+              className={styles.fontSizeBtn}
+              onClick={onIncreaseFontSize}
+              disabled={fontSize >= maxFontSize}
+              aria-label={increaseLabel}
+              title={increaseLabel}
+            >
+              A+
+            </button>
+          </div>
+        </div>
         <div className={styles.langSelectWrap}>
           <label htmlFor='delphai-interface-lang' className={styles.langSelectLabel}>
             {langFieldLabel}

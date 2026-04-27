@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import styles from '../../page.module.css';
 
 function formatInline(text: string): ReactNode[] {
@@ -14,7 +14,7 @@ function formatInline(text: string): ReactNode[] {
   });
 }
 
-export function AIMessage({ content }: { content: string }) {
+export function AIMessage({ content, fontSize }: { content: string; fontSize: number }) {
   const lines = content.split('\n');
   const elements: ReactNode[] = [];
   let key = 0;
@@ -55,5 +55,9 @@ export function AIMessage({ content }: { content: string }) {
       </p>,
     );
   }
-  return <div className={styles.aiText}>{elements}</div>;
+  return (
+    <div className={styles.aiText} style={{ '--chat-font-size': `${fontSize}px` } as CSSProperties}>
+      {elements}
+    </div>
+  );
 }

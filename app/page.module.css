@@ -1,4 +1,5 @@
 .app {
+  --chat-font-size: 15px;
   display: flex;
   flex-direction: column;
   height: 100dvh;
@@ -145,6 +146,78 @@
   gap: 10px;
   flex-wrap: wrap;
   margin-left: auto;
+}
+
+.fontSizeWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fontSizeLabel {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+}
+
+.fontSizeControl {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  overflow: hidden;
+}
+
+.fontSizeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  min-height: 34px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    background-color 0.18s cubic-bezier(0.25, 1, 0.5, 1),
+    color 0.18s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.fontSizeBtn:hover:not(:disabled) {
+  background: var(--bg);
+  color: var(--accent-sage);
+}
+
+.fontSizeBtn:disabled {
+  color: var(--text-tertiary);
+  cursor: default;
+  opacity: 0.45;
+}
+
+.fontSizeValue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  min-height: 34px;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  color: var(--text-tertiary);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .langSelectWrap {
@@ -347,7 +420,7 @@
 
 .bubble {
   max-width: 92%;
-  font-size: 15px;
+  font-size: var(--chat-font-size);
   line-height: 1.75;
   padding: 1rem 1.25rem;
 }
@@ -358,7 +431,7 @@
   border: 0.5px solid var(--border-strong);
   color: var(--text-secondary);
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: max(13px, calc(var(--chat-font-size) - 1px));
 }
 
 .aiBubble {
@@ -398,7 +471,7 @@
 
 .sectionContent {
   font-family: var(--font-serif);
-  font-size: 15px;
+  font-size: var(--chat-font-size);
   line-height: 1.8;
   color: var(--text-primary);
 }
@@ -431,7 +504,7 @@
 
 .questionText {
   font-family: var(--font-serif);
-  font-size: 16px;
+  font-size: calc(var(--chat-font-size) + 1px);
   font-weight: 700;
   line-height: 1.7;
   color: var(--text-primary);
@@ -498,7 +571,7 @@
 .input {
   flex: 1;
   font-family: var(--font-sans);
-  font-size: 15px;
+  font-size: var(--chat-font-size);
   color: var(--text-primary);
   background: var(--bg);
   border: 1px solid var(--border-strong);
@@ -597,14 +670,14 @@
 .aiPara {
   margin: 0 0 10px;
   line-height: 1.75;
-  font-size: 15px;
+  font-size: var(--chat-font-size);
 }
 
 .bulletItem {
   padding-left: 16px;
   margin-bottom: 8px;
   line-height: 1.65;
-  font-size: 15px;
+  font-size: var(--chat-font-size);
   position: relative;
 }
 
@@ -617,7 +690,7 @@
 
 .sectionHeading {
   font-weight: 500;
-  font-size: 13px;
+  font-size: max(11px, calc(var(--chat-font-size) - 2px));
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: #4a6741;

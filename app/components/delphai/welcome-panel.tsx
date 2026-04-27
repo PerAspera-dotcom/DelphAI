@@ -3,6 +3,7 @@ import styles from '../../page.module.css';
 type WelcomePanelProps = {
   language: string;
   welcomeText: string;
+  fontSize: number;
   suggestionsVisible: boolean;
   suggestions: string[];
   onPickSuggestion: (text: string) => void;
@@ -11,6 +12,7 @@ type WelcomePanelProps = {
 export function WelcomePanel({
   language,
   welcomeText,
+  fontSize,
   suggestionsVisible,
   suggestions,
   onPickSuggestion,
@@ -37,14 +39,22 @@ export function WelcomePanel({
     <div className={styles.welcomeBlock}>
       <div className={styles.welcomeText}>
         <span className={styles.welcomeLine}>{welcomeLine}</span>
-        <span className={styles.welcomeQ}>{welcomeText}</span>
+        <span className={styles.welcomeQ} style={{ fontSize }}>
+          {welcomeText}
+        </span>
       </div>
       {suggestionsVisible && (
         <div className={styles.suggestionsBlock}>
           <div className={styles.suggestionsLabel}>{suggestionsLabel}</div>
           <div className={styles.suggestions}>
             {suggestions.map((s) => (
-              <button key={s} type='button' className={styles.sugBtn} onClick={() => onPickSuggestion(s)}>
+              <button
+                key={s}
+                type='button'
+                className={styles.sugBtn}
+                style={{ fontSize: Math.max(13, fontSize - 2) }}
+                onClick={() => onPickSuggestion(s)}
+              >
                 {s}
               </button>
             ))}
