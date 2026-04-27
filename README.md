@@ -18,6 +18,12 @@ A philosophical thinking partner. Think deeper. See further.
 ### Step 1 — Install Node.js
 Go to https://nodejs.org and download the LTS version. Run the installer. This is the engine that runs the app locally.
 
+After installing Node.js, enable pnpm in your terminal:
+```
+corepack enable
+corepack prepare pnpm@10.33.0 --activate
+```
+
 ### Step 2 — Install Cursor
 Go to https://cursor.com and download Cursor for your operating system. Install it. This is where you will manage and edit the project.
 
@@ -34,7 +40,7 @@ Go to https://cursor.com and download Cursor for your operating system. Install 
 ### Step 5 — Install the project dependencies
 In the terminal, type exactly:
 ```
-npm install
+pnpm install
 ```
 Then press Enter. Wait for it to finish (takes about a minute).
 
@@ -47,7 +53,7 @@ Then press Enter. Wait for it to finish (takes about a minute).
 ### Step 7 — Start the app
 In the terminal, type:
 ```
-npm run dev
+pnpm dev
 ```
 Then press Enter. Open your browser and go to:
 ```
@@ -57,20 +63,31 @@ DelphAI is now running on your computer. You will see the age gate, then the ful
 
 To stop it, press Ctrl+C in the terminal.
 
+### Step 8 — Build the app locally
+Before publishing, you can check that the production build works:
+```
+pnpm build
+```
+
+To run the production build locally after that:
+```
+pnpm start
+```
+
 ---
 
 ## PART 2 — Publish DelphAI to the web (free, permanent URL)
 
-### Step 8 — Create a GitHub repository
+### Step 9 — Create a GitHub repository
 - Go to https://github.com and sign in
 - Click the + button in the top right → New repository
 - Name it: delphai
 - Leave everything else as default
 - Click Create repository
-- Copy the URL it shows you (looks like: https://github.com/YOURNAME/delphai.git)
+- Copy the URL it shows you, which looks like: https://github.com/YOURNAME/delphai.git
 
-### Step 9 — Push your code to GitHub
-In Cursor's terminal, run these commands one at a time (replace the URL with yours from Step 8):
+### Step 10 — Push your code to GitHub
+In Cursor's terminal, run these commands one at a time. Replace the URL with yours from Step 9:
 ```
 git init
 git add .
@@ -81,7 +98,7 @@ git push -u origin main
 ```
 If it asks for a username and password, use your GitHub credentials.
 
-### Step 10 — Deploy on Vercel
+### Step 11 — Deploy on Vercel
 - Go to https://vercel.com and sign in (you can sign in with your GitHub account)
 - Click Add New → Project
 - Click Import next to your delphai repository
@@ -91,7 +108,7 @@ If it asks for a username and password, use your GitHub credentials.
   - Value: your API key from console.anthropic.com
 - Click Deploy
 
-Wait about 2 minutes. Vercel will give you a live URL like:
+Vercel will detect `pnpm-lock.yaml` and install dependencies with pnpm. Wait about 2 minutes. Vercel will give you a live URL like:
 ```
 https://delphai.vercel.app
 ```
@@ -148,7 +165,8 @@ delphai/
 
 ## If something goes wrong
 
-- npm install fails: make sure Node.js is installed correctly (Step 1)
+- pnpm install fails: make sure Node.js is installed correctly (Step 1)
+- pnpm build fails: read the error in the terminal and fix the file it names
 - App shows an error: check your API key in .env.local is correct with no extra spaces
 - Vercel deployment fails: make sure ANTHROPIC_API_KEY is set in Vercel environment variables
 - Anything else: open Cursor's AI chat (the sidebar) and paste the error — it will help you fix it
