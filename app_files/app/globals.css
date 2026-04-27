@@ -1,0 +1,57 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Body sets --font-sans / --font-serif from next/font (layout.tsx); these are html-level fallbacks only */
+  --font-sans: system-ui, sans-serif;
+  --font-serif: Georgia, 'Times New Roman', serif;
+  --accent: #5a7a9a;
+  --accent-dark: #3d5f7a;
+  --accent-sage: #4a6741;
+  --bg: #fbfbf9;
+  --bg-secondary: #f2f1ed;
+  --text-primary: #1a1a18;
+  --text-secondary: #555550;
+  --text-tertiary: #999990;
+  --border: rgba(0, 0, 0, 0.1);
+  --border-strong: rgba(0, 0, 0, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161513;
+    --bg-secondary: #1e1e1c;
+    --text-primary: #f0f0ec;
+    --text-secondary: #aaaaaa;
+    --text-tertiary: #666660;
+    --border: rgba(255, 255, 255, 0.1);
+    --border-strong: rgba(255, 255, 255, 0.2);
+  }
+}
+
+html,
+body {
+  height: 100%;
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+#__next {
+  height: 100%;
+}
+
+textarea {
+  font-family: var(--font-sans);
+}
+
+button:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 85%, transparent);
+  outline-offset: 2px;
+}
