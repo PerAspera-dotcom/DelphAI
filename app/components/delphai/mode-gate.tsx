@@ -1,12 +1,13 @@
 import styles from '../../page.module.css';
-import { DelphAILogo, PhilosopherLogo, ReaderLogo } from './logos';
+import { DelphAILogo, PhilosopherLogo, ReaderLogo, SeanceLogo } from './logos';
 
 type ModeGateProps = {
   onSelectPhilosopher: () => void;
   onSelectReader: () => void;
+  onSelectSeance: () => void;
 };
 
-export function ModeGate({ onSelectPhilosopher, onSelectReader }: ModeGateProps) {
+export function ModeGate({ onSelectPhilosopher, onSelectReader, onSelectSeance }: ModeGateProps) {
   return (
     <div className={styles.modeGate}>
       <div className={styles.modeGateHeader}>
@@ -34,6 +35,15 @@ export function ModeGate({ onSelectPhilosopher, onSelectReader }: ModeGateProps)
             with suggested responses.
           </div>
           <div className={styles.modeCardNote}>Type your own response at any point to switch to Philosopher mode.</div>
+        </button>
+        <button type='button' className={`${styles.modeCard} ${styles.modeCardSeance}`} onClick={onSelectSeance}>
+          <SeanceLogo size={52} />
+          <div className={styles.modeCardTitle}>Séance mode</div>
+          <div className={styles.modeCardDesc}>
+            Summon a philosopher from history and converse with them directly. DelphAI embodies their voice, style, and
+            thinking based on their known works.
+          </div>
+          <div className={styles.modeCardNote}>Type your own statement at any point to switch to Philosopher mode.</div>
         </button>
       </div>
     </div>

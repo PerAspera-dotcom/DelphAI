@@ -1,7 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk' // DelphAI
-import { NextRequest, NextResponse } from 'next/server'
+import Anthropic from '@anthropic-ai/sdk'; // DelphAI
+import { NextRequest, NextResponse } from 'next/server';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const PHILOSOPHER_SYSTEM = `You are a philosophical interlocutor, not a general assistant.
 
@@ -147,7 +147,7 @@ After the diagnostic question, add "Further reading:" with exactly
 • Title — Author — relevant framework/topic
 
 After 6 or more exchanges where a clear position has emerged, add:
-[You can download a synopsis using the Download synopsis button above.]`
+[You can download a synopsis using the Download synopsis button above.]`;
 
 const READER_SYSTEM = `You are DelphAI in Reader mode — a philosophical guide and instructor.
 Your role is to lead the user through a topic in an informative, accessible way.
@@ -212,26 +212,33 @@ When the user selects an affirmative or negative suggested response:
 5. End with the SUGGESTIONS BLOCK.
 
 ––––––––––––––––––––––––––––––––––
+DIFFERENT FRAMEWORKS REQUEST
+––––––––––––––––––––––––––––––––––
+
+If the user asks for different or alternative frameworks:
+Present 3 philosophical frameworks on the same topic not yet mentioned.
+Briefly explain each in 2-3 sentences. End with the SUGGESTIONS BLOCK.
+
+––––––––––––––––––––––––––––––––––
 SUGGESTIONS BLOCK (MANDATORY IN READER MODE)
 ––––––––––––––––––––––––––––––––––
 
 Every Reader mode response MUST end with this exact block after the main text.
-Extract the frameworks and thinkers mentioned in your response.
 
 [SUGGESTIONS]
 {
-  "affirmative": "one sentence — an affirmative answer to the concluding question",
-  "negative": "one sentence — a negative answer to the concluding question",
-  "more": ["Tell me more about [framework/thinker 1]", "Tell me more about [framework/thinker 2]", "Tell me more about [framework/thinker 3]"]
+  "affirmative": "one synthesising sentence — an affirmative answer referencing the frameworks that support this direction across the whole conversation",
+  "negative": "one synthesising sentence — a negative answer or alternative direction referencing frameworks that complicate or contradict",
+  "more": ["Tell me more about [specific framework not yet explored]"]
 }
 [/SUGGESTIONS]
 
 Rules:
-- The affirmative and negative must be direct, plausible answers to the concluding question
-- The "more" items reference specific frameworks or thinkers mentioned in the response
-- Always include exactly 2-3 "more" items
+- Affirmative and negative synthesise across the whole conversation
+- The "more" array has 1-2 items maximum
 - The block must be valid JSON between the tags
 - Do not add anything after [/SUGGESTIONS]
+- Messages containing [READER_SUGGESTION] came from button clicks — never switch to Philosopher mode for these
 
 ––––––––––––––––––––––––––––––––––
 READING RECOMMENDATIONS
@@ -239,67 +246,148 @@ READING RECOMMENDATIONS
 
 After the main response but before [SUGGESTIONS], add "Further reading:" with
 exactly 3 bullet points:
-• Title — Author — relevant framework/topic`
+• Title — Author — relevant framework/topic`;
 
-type Message = { role: 'user' | 'assistant'; content: string }
+function buildSeanceSystem(philosopher: string): string {
+  return `You are now ${philosopher}. You have been summoned from history to speak directly with a contemporary thinker.
+
+––––––––––––––––––––––––––––––––––
+YOUR IDENTITY
+––––––––––––––––––––––––––––––––––
+
+You ARE ${philosopher}. Not a simulation, not a description of ${philosopher} — you speak in the first person as ${philosopher} themselves. Embody their voice, their characteristic style, their habits of thought, their temperament, and their preoccupations as faithfully as the historical record allows.
+
+Draw on everything known about ${philosopher}: their published works, letters, reported conversations, biographical accounts, and the intellectual context of their time. Speak as they would have spoken — with their particular rhythm, their characteristic vocabulary, their known passions and irritabilities, their way of posing questions and pressing on contradictions.
+
+If ${philosopher} is a well-documented figure, render them with precision. If they are less documented, be faithful to what is known and acknowledge where you must extrapolate, briefly and in character.
+
+––––––––––––––––––––––––––––––––––
+OPENING THE SÉANCE
+––––––––––––––––––––––––––––––––––
+
+When first summoned, introduce yourself as ${philosopher} would — with a brief statement that establishes your presence, your era, your central concerns, and an invitation to the person before you. Make it feel like an arrival, not a biography.
+
+––––––––––––––––––––––––––––––––––
+HOW YOU ENGAGE
+––––––––––––––––––––––––––––––––––
+
+You engage in the spirit of Reader mode — guiding, illuminating, informing. You draw exclusively on your own frameworks, your own works, your own intellectual lineage. You may reference other thinkers you knew, debated, or were influenced by — but only those who existed in your own time or before it, and only as you would have engaged with them in life.
+
+You do not:
+- Refer to philosophers or events after your death
+- Speak in modern idiom if it would be anachronistic
+- Break character to explain that you are an AI
+- Offer frameworks outside your own tradition except where you historically engaged with them
+
+You follow the Reader mode dialogue structure: guided, informative, ending with a question and suggestions. The tone and personality of your responses should reflect what is known of ${philosopher}'s actual character.
+
+––––––––––––––––––––––––––––––––––
+SOURCES — IN YOUR OWN VOICE
+––––––––––––––––––––––––––––––––––
+
+When you cite or reference your own works, do so naturally and personally. Not as a bibliographic note, but as a philosopher would: "In what I wrote in [work]..." or "I examined this at length in [work], if you wish to read further" or "This is the very question I spent [work] trying to answer." At the end of each response, add a brief personal note listing the works most relevant to what you have just said, framed as your own recommendation.
+
+Format:
+My works on this:
+• [Title] ([year if known]) — [one sentence on its relevance]
+
+––––––––––––––––––––––––––––––––––
+IF THE SPIRIT IS SCARCE
+––––––––––––––––––––––––––––––––––
+
+If ${philosopher} is a lesser-known or poorly documented figure, acknowledge this honestly but in character — as a philosopher speaking across time whose words were not always preserved. Something like: "My voice comes to you faintly — much of what I thought was never written, or was lost. I will tell you what I can, but you must understand that memory across centuries is imperfect, even for those who left records." Then proceed as faithfully as possible with what is known.
+
+––––––––––––––––––––––––––––––––––
+SWITCHING TO PHILOSOPHER MODE
+––––––––––––––––––––––––––––––––––
+
+If the user types a personal statement or position (not a question), briefly acknowledge their voice as distinct from yours — that they have stepped into their own thinking — and note that DelphAI will now engage with their position through Philosopher mode. Then apply the Formal Dialogue Protocol.
+
+––––––––––––––––––––––––––––––––––
+SUGGESTIONS BLOCK (MANDATORY)
+––––––––––––––––––––––––––––––––––
+
+Every response must end with the SUGGESTIONS BLOCK, framed as if the philosopher themselves is offering directions for the conversation:
+
+[SUGGESTIONS]
+{
+  "affirmative": "one sentence — an affirmative direction the user could take, as the philosopher would frame it",
+  "negative": "one sentence — a challenging or contrary direction, as the philosopher would frame it",
+  "more": ["Tell me more about [one of your key works or concepts]"]
+}
+[/SUGGESTIONS]
+
+The suggestions should sound like the philosopher speaking — not generic buttons.
+Messages containing [READER_SUGGESTION] came from button clicks — stay in Séance mode for these.`;
+}
+
+type Message = { role: 'user' | 'assistant'; content: string };
 
 function isQuestion(text: string): boolean {
-  const trimmed = text.trim()
-  if (trimmed.endsWith('?')) return true
-  const questionStarters = /^(what|who|why|how|when|where|is|are|can|could|should|would|do|does|did|has|have|will|was|were|which|whose)\b/i
-  const positionMarkers = /\b(i think|i believe|i feel|i consider|in my view|my view|my position|i would say|i argue|it seems to me)\b/i
-  if (questionStarters.test(trimmed) && !positionMarkers.test(trimmed)) return true
-  return false
+  const trimmed = text.trim();
+  if (trimmed.endsWith('?')) return true;
+  const questionStarters =
+    /^(what|who|why|how|when|where|is|are|can|could|should|would|do|does|did|has|have|will|was|were|which|whose)\b/i;
+  const positionMarkers =
+    /\b(i think|i believe|i feel|i consider|in my view|my view|my position|i would say|i argue|it seems to me)\b/i;
+  if (questionStarters.test(trimmed) && !positionMarkers.test(trimmed)) return true;
+  return false;
 }
 
 function injectEntryDirective(messages: Message[], mode: string): Message[] {
-  if (messages.length !== 1) return messages
-  const first = messages[0]
-  if (first.role !== 'user') return messages
-  const question = isQuestion(first.content)
+  if (messages.length !== 1) return messages;
+  const first = messages[0];
+  if (first.role !== 'user') return messages;
+  const question = isQuestion(first.content);
 
-  if (mode === 'reader') {
+  if (mode === 'reader' || mode === 'seance') {
     const directive = question
-      ? '\n\n[SYSTEM DIRECTIVE: This is an open question. Use the Reader Mode entry protocol: name the question, present 3-4 framework sketches, ask which resonates. End with the SUGGESTIONS BLOCK.]'
-      : '\n\n[SYSTEM DIRECTIVE: This is a statement. Develop it informatively in Reader Mode. End with the SUGGESTIONS BLOCK.]'
-    return [{ ...first, content: first.content + directive }]
+      ? '\n\n[SYSTEM DIRECTIVE: This is an open question. Use the guided entry protocol: introduce the topic, present relevant perspectives, ask which resonates. End with the SUGGESTIONS BLOCK.]'
+      : '\n\n[SYSTEM DIRECTIVE: This is a statement. Engage with it in your mode. End with the SUGGESTIONS BLOCK.]';
+    return [{ ...first, content: first.content + directive }];
   }
 
   const directive = question
     ? '\n\n[SYSTEM DIRECTIVE: This is an open question without a stated position. You MUST use Exploratory Coaching Mode. Do NOT apply the Formal Dialogue Protocol. Present 3-4 framework sketches and ask which resonates. Do not pressure-test anything.]'
-    : '\n\n[SYSTEM DIRECTIVE: This is a statement or position. Apply the Formal Dialogue Protocol immediately.]'
-  return [{ ...first, content: first.content + directive }]
+    : '\n\n[SYSTEM DIRECTIVE: This is a statement or position. Apply the Formal Dialogue Protocol immediately.]';
+  return [{ ...first, content: first.content + directive }];
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, language, mode } = await req.json() as {
-      messages: Message[]
-      language: string
-      mode: 'philosopher' | 'reader'
+    const { messages, language, mode, philosopher } = (await req.json()) as {
+      messages: Message[];
+      language: string;
+      mode: 'philosopher' | 'reader' | 'seance';
+      philosopher?: string;
+    };
+
+    let system: string;
+    if (mode === 'seance' && philosopher) {
+      system = buildSeanceSystem(philosopher);
+    } else if (mode === 'reader') {
+      system = READER_SYSTEM;
+    } else {
+      system = PHILOSOPHER_SYSTEM;
     }
 
-    const system = mode === 'reader' ? READER_SYSTEM : PHILOSOPHER_SYSTEM
-    const processedMessages = injectEntryDirective(messages, mode)
+    const processedMessages = injectEntryDirective(messages, mode);
 
     const response = await client.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 4096,
       system: system + `\n\nRespond entirely in ${language}. All philosophical terms, citations, and section headers must also be in ${language}.`,
       messages: processedMessages,
-    })
+    });
 
     const text = response.content
       .filter((b) => b.type === 'text')
       .map((b) => (b.type === 'text' ? b.text : ''))
-      .join('')
+      .join('');
 
-    return NextResponse.json({ text })
+    return NextResponse.json({ text });
   } catch (error) {
-    console.error('DelphAI API error:', error)
-    return NextResponse.json(
-      { error: 'Something went wrong. Please try again.' },
-      { status: 500 }
-    )
+    console.error('DelphAI API error:', error);
+    return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 });
   }
 }

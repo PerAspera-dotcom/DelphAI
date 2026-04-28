@@ -8,6 +8,7 @@ import { ChatComposer } from './components/delphai/chat-composer';
 import { ChatHeader } from './components/delphai/chat-header';
 import { ModeGate } from './components/delphai/mode-gate';
 import { MessageThread } from './components/delphai/message-thread';
+import { PhilosopherGate } from './components/delphai/philosopher-gate';
 import { WelcomePanel } from './components/delphai/welcome-panel';
 import { useDelphaiChat } from './lib/delphai/hooks/use-delphai-chat';
 
@@ -46,9 +47,27 @@ export default function Home() {
       <ModeGate
         onSelectPhilosopher={chat.selectPhilosopherMode}
         onSelectReader={chat.selectReaderMode}
+        onSelectSeance={chat.selectSeanceMode}
       />
     );
   }
+
+  if (chat.mode === 'seance' && !chat.selectedPhilosopher) {
+    return (
+      <PhilosopherGate
+        language={chat.language}
+        onConfirm={chat.confirmPhilosopher}
+        onBack={chat.goBackToModeGate}
+      />
+    );
+  }
+
+  const modeBadgeClass =
+    chat.activeMode === 'reader'
+      ? styles.modeBadgeReader
+      : chat.activeMode === 'seance'
+        ? styles.modeBadgeSeance
+        : styles.modeBadgePhilosopher;
 
   return (
     <div className={styles.app} style={{ '--chat-font-size': `${chatFontSize}px` } as CSSProperties}>
@@ -64,6 +83,8 @@ export default function Home() {
         showSynopsis={chat.messages.length >= 2}
         downloading={chat.downloading}
         onDownloadSynopsis={chat.downloadSynopsis}
+        selectedPhilosopher={chat.selectedPhilosopher}
+        modeBadgeClass={modeBadgeClass}
       />
 
       <div className={styles.chat} ref={chat.chatRef}>

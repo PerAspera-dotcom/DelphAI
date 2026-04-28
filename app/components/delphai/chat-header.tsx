@@ -14,6 +14,8 @@ type ChatHeaderProps = {
   showSynopsis: boolean;
   downloading: boolean;
   onDownloadSynopsis: () => void;
+  selectedPhilosopher?: string | null;
+  modeBadgeClass?: string;
 };
 
 export function ChatHeader({
@@ -28,23 +30,35 @@ export function ChatHeader({
   showSynopsis,
   downloading,
   onDownloadSynopsis,
+  selectedPhilosopher,
+  modeBadgeClass,
 }: ChatHeaderProps) {
   const modeLabel =
-    activeMode === 'reader'
-      ? language === 'Dutch'
-        ? 'Lezermodus'
-        : language === 'French'
-          ? 'Mode lecture'
-          : language === 'German'
-            ? 'Lesemodus'
-            : 'Reader mode'
-      : language === 'Dutch'
-        ? 'Filosofenmodus'
-        : language === 'French'
-          ? 'Mode philosophe'
-          : language === 'German'
-            ? 'Philosophenmodus'
-            : 'Philosopher mode';
+    activeMode === 'seance' && selectedPhilosopher
+      ? selectedPhilosopher
+      : activeMode === 'reader'
+        ? language === 'Dutch'
+          ? 'Lezermodus'
+          : language === 'French'
+            ? 'Mode lecture'
+            : language === 'German'
+              ? 'Lesemodus'
+              : 'Reader mode'
+        : activeMode === 'seance'
+          ? language === 'Dutch'
+            ? 'Séancemodus'
+            : language === 'French'
+              ? 'Mode séance'
+              : language === 'German'
+                ? 'Séance-Modus'
+                : 'Séance mode'
+          : language === 'Dutch'
+            ? 'Filosofenmodus'
+            : language === 'French'
+              ? 'Mode philosophe'
+              : language === 'German'
+                ? 'Philosophenmodus'
+                : 'Philosopher mode';
 
   const synopsisLabel = downloading
     ? '...'
@@ -86,15 +100,15 @@ export function ChatHeader({
           ? 'Text vergrößern'
           : 'Increase text size';
 
+  const badgeClass = modeBadgeClass ?? styles.modeBadgePhilosopher;
+
   return (
     <header className={styles.header}>
       <DelphAILogo size={32} />
       <div className={styles.logoText}>
         Delph<span>AI</span>
       </div>
-      <div
-        className={`${styles.modeBadge} ${activeMode === 'reader' ? styles.modeBadgeReader : styles.modeBadgePhilosopher}`}
-      >
+      <div className={`${styles.modeBadge} ${badgeClass}`}>
         {modeLabel}
       </div>
       <div className={styles.headerEnd}>

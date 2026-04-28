@@ -12,6 +12,7 @@ const POSITION_MARKER_REGEX =
 export function useDelphaiChat() {
   const [ageVerified, setAgeVerified] = useState<boolean | null>(null);
   const [mode, setMode] = useState<Mode | null>(null);
+  const [selectedPhilosopher, setSelectedPhilosopher] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [suggestionMap, setSuggestionMap] = useState<Record<number, Suggestions>>({});
   const [input, setInput] = useState('');
@@ -26,6 +27,9 @@ export function useDelphaiChat() {
   const filledFromSuggestionRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const prevLanguageRef = useRef('English');
+  const [fontSize, setFontSize] = useState(15);
+  const minFontSize = 13;
+  const maxFontSize = 20;
 
   useEffect(() => {
     setSuggestions(getRandomSuggestions(4, language));
@@ -66,7 +70,7 @@ export function useDelphaiChat() {
   function handleKey(e: KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      const isCustom = activeMode === 'reader' && !filledFromSuggestionRef.current;
+      const isCustom = (activeMode === 'reader' || activeMode === 'seance') && !filledFromSuggestionRef.current;
       filledFromSuggestionRef.current = false;
       send(input, isCustom);
     }
@@ -78,6 +82,14 @@ export function useDelphaiChat() {
     textareaRef.current?.focus();
   }
 
+  function decreaseFontSize() {
+    setFontSize((prev) => Math.max(minFontSize, prev - 1));
+  }
+
+  function increaseFontSize() {
+    setFontSize((prev) => Math.min(maxFontSize, prev + 1));
+  }
+
   async function downloadSynopsis() {
     if (messages.length < 2) return;
     setDownloading(true);
@@ -85,14 +97,16 @@ export function useDelphaiChat() {
       const res = await fetch('/api/synopsis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages, language }),
+        body: JSON.stringify({ messages, language, philosopher: selectedPhilosopher }),
       });
       if (!res.ok) throw new Error('Failed');
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'DelphAI_Synopsis.html';
+      a.download = selectedPhilosopher
+        ? `DelphAI_Seance_${selectedPhilosopher.replace(/\s+/g, '_')}.html`
+        : 'DelphAI_Synopsis.html';
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -106,11 +120,12 @@ export function useDelphaiChat() {
     const trimmed = text.trim();
     if (!trimmed || loading) return;
 
-    const switchToPhilosopher = isCustomInReader && POSITION_MARKER_REGEX.test(trimmed) && !isTypedQuestion(trimmed);
+    const switchToPhilosopher =
+      isCustomInReader && POSITION_MARKER_REGEX.test(trimmed) && !isTypedQuestion(trimmed);
     const sendMode: Mode = switchToPhilosopher ? 'philosopher' : activeMode || mode || 'philosopher';
     if (switchToPhilosopher) setActiveMode('philosopher');
 
-    const messageContent = sendMode === 'reader' ? trimmed + ' [READER_SUGGESTION]' : trimmed;
+    const messageContent = sendMode === 'reader' || sendMode === 'seance' ? trimmed + ' [READER_SUGGESTION]' : trimmed;
 
     const newMessages: Message[] = [...messages, { role: 'user', content: messageContent }];
     setMessages(newMessages);
@@ -123,7 +138,12 @@ export function useDelphaiChat() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages, language, mode: sendMode }),
+        body: JSON.stringify({
+          messages: newMessages,
+          language,
+          mode: sendMode,
+          philosopher: selectedPhilosopher,
+        }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -131,7 +151,7 @@ export function useDelphaiChat() {
       const { clean, suggestions: sugs } = parseSuggestions(data.text);
       const aiIndex = newMessages.length;
       setMessages([...newMessages, { role: 'assistant', content: clean }]);
-      if (sugs && sendMode === 'reader') {
+      if (sugs && (sendMode === 'reader' || sendMode === 'seance')) {
         setSuggestionMap((prev) => ({ ...prev, [aiIndex]: sugs }));
       }
     } catch {
@@ -150,33 +170,62 @@ export function useDelphaiChat() {
   function selectPhilosopherMode() {
     setMode('philosopher');
     setActiveMode('philosopher');
+    setSelectedPhilosopher(null);
   }
 
   function selectReaderMode() {
     setMode('reader');
     setActiveMode('reader');
+    setSelectedPhilosopher(null);
+  }
+
+  function selectSeanceMode() {
+    setMode('seance');
+    setActiveMode('seance');
+    setSelectedPhilosopher(null);
+  }
+
+  function confirmPhilosopher(philosopher: string) {
+    setSelectedPhilosopher(philosopher);
+  }
+
+  function goBackToModeGate() {
+    setMode(null);
+    setSelectedPhilosopher(null);
+    setMessages([]);
+    setSuggestionMap({});
+    setSuggestionsVisible(true);
   }
 
   return {
     activeMode,
     ageVerified,
     chatRef,
+    decreaseFontSize,
     downloading,
     downloadSynopsis,
     fill,
+    fontSize,
+    goBackToModeGate,
     handleInput,
     handleKey,
     handleSuggestionClick,
+    confirmPhilosopher,
     input,
     language,
     loading,
+    maxFontSize,
     messages,
+    minFontSize,
     mode,
     selectPhilosopherMode,
     selectReaderMode,
+    selectSeanceMode,
+    selectedPhilosopher,
     send,
     setAgeVerified,
     setLanguage,
+    increaseFontSize,
     suggestionMap,
     suggestions,
     suggestionsVisible,

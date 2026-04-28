@@ -37,6 +37,21 @@ export function ReaderLogo({ size }: { size: number }) {
   );
 }
 
+export function SeanceLogo({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox='0 0 48 48' fill='none'>
+      <circle cx='24' cy='24' r='22' stroke='#4a6741' strokeWidth='1.5' />
+      <path d='M24 6 L24 42' stroke='#4a6741' strokeWidth='0.75' strokeDasharray='2 3' opacity='0.3' />
+      <path d='M6 24 L42 24' stroke='#4a6741' strokeWidth='0.75' strokeDasharray='2 3' opacity='0.3' />
+      <path d='M24 38 Q16 34 16 26 Q16 20 20 17 Q19 22 22 23 Q20 18 24 12 Q28 18 26 23 Q29 22 28 17 Q32 20 32 26 Q32 34 24 38Z' fill='none' stroke='#4a6741' strokeWidth='1.3' strokeLinejoin='round' />
+      <path d='M24 34 Q20 31 20 26 Q20 22 22 20 Q22 24 24 25 Q26 24 26 20 Q28 22 28 26 Q28 31 24 34Z' fill='none' stroke='#4a6741' strokeWidth='0.7' opacity='0.5' strokeLinejoin='round' />
+      <circle cx='20' cy='10' r='0.9' fill='#4a6741' opacity='0.4' />
+      <circle cx='28' cy='8' r='0.7' fill='#4a6741' opacity='0.3' />
+      <circle cx='24' cy='7' r='1' fill='#4a6741' opacity='0.25' />
+    </svg>
+  );
+}
+
 export function DelphAILogo({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox='0 0 48 48' fill='none'>
